@@ -3,12 +3,12 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCnCAdQvpU50RvtHEmlgg57E5eGFizcqo8",
+  authDomain: "inventra-ac40f.firebaseapp.com",
+  projectId: "inventra-ac40f",
+  storageBucket: "inventra-ac40f.firebasestorage.app",
+  messagingSenderId: "866967755700",
+  appId: "1:866967755700:web:0b1748df1fcd1a48a2b0e1"
 };
 
 const app = initializeApp(firebaseConfig);

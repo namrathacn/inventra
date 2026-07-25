@@ -1,7 +1,150 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
 @import "tailwindcss";
 
+
+:root {
+
+  --bg:#070B16;
+  --text:#F8FAFC;
+
+}
+
+
+*{
+  box-sizing:border-box;
+}
+
+
 body {
-  margin: 0;
-  font-family: 'Inter', system-ui, sans-serif;
-  background-color: #f8fafc;
+
+  margin:0;
+
+  background:
+  radial-gradient(
+    circle at top,
+    rgba(56,189,248,.15),
+    transparent 35%
+  ),
+  linear-gradient(
+    135deg,
+    #070B16,
+    #0F172A
+  );
+
+  color:var(--text);
+
+  font-family:'Manrope',sans-serif;
+
+}
+
+
+
+.font-display{
+
+  font-family:'Space Grotesk',sans-serif;
+
+  letter-spacing:-0.05em;
+
+}
+
+
+
+.glass{
+
+  background:
+  rgba(255,255,255,.06);
+
+  border:
+  1px solid rgba(255,255,255,.12);
+
+  backdrop-filter:
+  blur(25px);
+
+}
+
+
+
+@keyframes float {
+
+
+0%,100%{
+
+transform:translateY(0px);
+
+}
+
+
+50%{
+
+transform:translateY(-12px);
+
+}
+
+
+}
+
+
+
+.animate-float{
+
+animation:float 5s ease-in-out infinite;
+
+}
+
+
+
+
+@keyframes glow {
+
+
+0%,100%{
+
+box-shadow:
+0 0 20px rgba(34,211,238,.15);
+
+}
+
+
+50%{
+
+box-shadow:
+0 0 45px rgba(34,211,238,.35);
+
+}
+
+
+}
+
+
+
+.animate-glow{
+
+animation:glow 4s infinite;
+
+}
+
+
+
+
+
+
+::-webkit-scrollbar{
+
+width:8px;
+
+}
+
+
+
+::-webkit-scrollbar-thumb{
+
+background:
+linear-gradient(
+#38BDF8,
+#8B5CF6
+);
+
+border-radius:20px;
+
 }
