@@ -1,23 +1,25 @@
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
+LineChart,
+Line,
+XAxis,
+YAxis,
+Tooltip,
+ResponsiveContainer,
+CartesianGrid
 } from "recharts";
 
-import { motion } from "framer-motion";
 
-import { useCurrency } from "../../context/CurrencyContext";
+import {useCurrency} from "../../context/CurrencyContext";
 
 
 
 export default function RevenueChart(){
 
 
-const { currency } = useCurrency();
+const {
+currencySymbol,
+convertAmount
+}=useCurrency();
 
 
 
@@ -30,22 +32,22 @@ revenue:1200
 
 {
 day:"Tue",
-revenue:2100
+revenue:1800
 },
 
 {
 day:"Wed",
-revenue:1600
+revenue:1500
 },
 
 {
 day:"Thu",
-revenue:2800
+revenue:2700
 },
 
 {
 day:"Fri",
-revenue:2400
+revenue:2300
 },
 
 {
@@ -63,71 +65,25 @@ revenue:4200
 
 
 
+
 return(
 
 
-<motion.div
-
-initial={{
-opacity:0,
-y:30
-}}
-
-animate={{
-opacity:1,
-y:0
-}}
-
-transition={{
-duration:0.6
-}}
-
-
-className="
-rounded-[32px]
-border
-border-white/10
-bg-white/[0.06]
-p-7
-backdrop-blur-xl
-"
-
-
->
-
-
-<h2 className="
-mb-6
-text-2xl
-font-bold
-text-white
+<div className="
+h-[350px]
+w-full
 ">
 
-Revenue Analytics
 
-</h2>
-
-
-
-
-<ResponsiveContainer
-
-width="100%"
-
-height={350}
-
->
+<ResponsiveContainer width="100%" height="100%">
 
 
 <LineChart data={data}>
 
 
-<CartesianGrid
-
+<CartesianGrid 
 strokeDasharray="3 3"
-
-stroke="rgba(255,255,255,0.1)"
-
+opacity={0.1}
 />
 
 
@@ -136,50 +92,25 @@ stroke="rgba(255,255,255,0.1)"
 
 dataKey="day"
 
-stroke="#94A3B8"
-
 />
 
 
 
-<YAxis
-
-stroke="#94A3B8"
-
-/>
+<YAxis/>
 
 
 
 
 <Tooltip
 
+formatter={(value)=>
 
-contentStyle={{
+`${currencySymbol}${convertAmount(value)}`
 
-background:"#111827",
-
-border:"1px solid rgba(255,255,255,.1)",
-
-borderRadius:"16px",
-
-color:"white"
-
-}}
-
-
-
-formatter={(value)=>[
-
-`${currency.symbol}${Math.round(value * currency.rate).toLocaleString()}`,
-
-"Revenue"
-
-]}
+}
 
 
 />
-
-
 
 
 
@@ -189,18 +120,11 @@ type="monotone"
 
 dataKey="revenue"
 
-stroke="#3B82F6"
+stroke="#3b82f6"
 
 strokeWidth={4}
 
-dot={{
-
-r:5,
-
-fill:"#3B82F6"
-
-}}
-
+dot={{r:5}}
 
 />
 
@@ -213,10 +137,11 @@ fill:"#3B82F6"
 
 
 
+</div>
 
-</motion.div>
 
 
 )
+
 
 }

@@ -1,119 +1,168 @@
-import { motion } from "framer-motion";
-
 import {
   FiBell,
   FiSearch,
+  FiChevronDown
 } from "react-icons/fi";
 
-import CurrencySelector from "../dashboard/CurrencySelector";
+import { useState } from "react";
+
+import { motion } from "framer-motion";
+
+import { useCurrency } from "../../context/CurrencyContext";
+
+import { useSearch } from "../../context/SearchContext";
 
 
 
-export default function Topbar() {
+export default function Topbar(){
 
 
-return (
+
+const {
+
+currency,
+
+setCurrency
+
+}=useCurrency();
 
 
-<motion.header
 
-initial={{
-y:-30,
-opacity:0
-}}
 
-animate={{
-y:0,
-opacity:1
-}}
+const {
 
-transition={{
-duration:.6
-}}
+search,
 
+setSearch
+
+}=useSearch();
+
+
+
+
+
+const [open,setOpen]=useState(false);
+
+
+
+
+
+
+const currencies=[
+
+
+{
+code:"INR",
+symbol:"₹",
+name:"Indian Rupee"
+},
+
+
+{
+code:"USD",
+symbol:"$",
+name:"US Dollar"
+},
+
+
+{
+code:"EUR",
+symbol:"€",
+name:"Euro"
+},
+
+
+{
+code:"GBP",
+symbol:"£",
+name:"British Pound"
+},
+
+
+{
+code:"JPY",
+symbol:"¥",
+name:"Japanese Yen"
+}
+
+
+];
+
+
+
+
+
+
+const currentCurrency =
+
+currencies.find(
+
+item=>item.code===currency
+
+);
+
+
+
+
+
+
+return(
+
+
+
+<header
 
 className="
-
-sticky
-top-4
-z-30
-mx-4
+relative
+z-50
+h-20
+px-6
 flex
 items-center
 justify-between
-rounded-[28px]
-border
+border-b
 border-white/10
-bg-white/[0.06]
-px-7
-py-5
-backdrop-blur-2xl
-shadow-xl
-
+bg-black/20
+backdrop-blur-xl
 "
+
+
 
 >
 
 
 
-<div>
-
-
-<p className="
-text-xs
-uppercase
-tracking-[0.3em]
-text-slate-500
-">
-
-Overview
-
-</p>
-
-
-<h2 className="
-mt-1
-font-display
-text-2xl
-font-bold
-text-white
-">
-
-Dashboard
-
-</h2>
-
-
-</div>
 
 
 
 
+{/* SEARCH */}
 
 
 
-<div className="flex items-center gap-5">
+<div
+
+className="
+flex
+items-center
+gap-3
+bg-white/5
+border
+border-white/10
+rounded-xl
+px-4
+py-2
+w-80
+"
 
 
 
-
-
-<CurrencySelector />
-
-
-
-
-
-
-<div className="relative">
+>
 
 
 <FiSearch
 
 className="
-absolute
-left-4
-top-3.5
 text-slate-400
 "
 
@@ -123,26 +172,27 @@ text-slate-400
 
 <input
 
-placeholder="Search anything..."
+
+value={search}
+
+
+onChange={(e)=>setSearch(e.target.value)}
+
+
+
+placeholder="Search products, orders..."
+
+
 
 className="
-
-w-80
-rounded-2xl
-border
-border-white/10
-bg-black/20
-py-3
-pl-11
-pr-5
-text-sm
-text-white
+bg-transparent
 outline-none
+text-white
 placeholder:text-slate-500
-transition
-focus:border-cyan-400/50
-
+w-full
 "
+
+
 
 />
 
@@ -155,120 +205,221 @@ focus:border-cyan-400/50
 
 
 
-<motion.button
 
 
-whileHover={{
-scale:1.1
-}}
-
-whileTap={{
-scale:.9
-}}
-
+<div
 
 className="
-
-relative
-rounded-2xl
-border
-border-white/10
-bg-white/5
-p-3
-text-white
-
+flex
+items-center
+gap-5
 "
 
 >
 
 
-<FiBell size={21}/>
 
 
-<motion.span
 
-animate={{
-scale:[1,1.4,1]
-}}
 
-transition={{
-duration:2,
-repeat:Infinity
-}}
+
+
+
+{/* CURRENCY */}
+
+
+
+<div
+
+className="
+relative
+z-[200]
+"
+
+>
+
+
+
+<button
+
+
+onClick={()=>setOpen(!open)}
+
 
 
 className="
-
-absolute
-right-2
-top-2
-h-2.5
-w-2.5
-rounded-full
-bg-cyan-400
-
+flex
+items-center
+gap-2
+bg-white/5
+border
+border-white/10
+rounded-xl
+px-4
+py-2
+text-white
+hover:bg-white/10
+transition
 "
+
+
+
+>
+
+
+
+<span>
+
+{currentCurrency?.symbol}
+
+</span>
+
+
+
+<span>
+
+{currency}
+
+</span>
+
+
+
+<FiChevronDown
+
+className={
+
+open
+
+?
+
+"rotate-180 transition"
+
+:
+
+"transition"
+
+}
 
 />
 
 
-</motion.button>
+
+</button>
 
 
 
 
 
+
+
+
+{
+
+open &&
 
 
 
 <motion.div
 
-whileHover={{
-scale:1.05
+
+initial={{
+
+opacity:0,
+
+y:-10
+
+}}
+
+
+animate={{
+
+opacity:1,
+
+y:0
+
 }}
 
 
 className="
-
-flex
-items-center
-gap-3
+absolute
+right-0
+top-14
+w-52
 rounded-2xl
+bg-slate-900
 border
 border-white/10
-bg-white/5
-px-4
-py-2
-
+shadow-2xl
+overflow-hidden
+z-[9999]
 "
+
+
 
 >
 
 
-<img
+{
 
-src="https://ui-avatars.com/api/?background=38bdf8&color=fff&name=Namratha"
+
+currencies.map(item=>(
+
+
+
+<button
+
+
+key={item.code}
+
+
+
+onClick={()=>{
+
+
+setCurrency(item.code);
+
+setOpen(false);
+
+
+}}
+
+
+
 
 className="
-h-11
-w-11
-rounded-xl
+w-full
+flex
+items-center
+gap-3
+px-5
+py-3
+text-white
+hover:bg-white/10
+transition
+text-left
 "
 
-/>
+
+
+>
+
+
+
+<span className="text-lg">
+
+{item.symbol}
+
+</span>
 
 
 
 <div>
 
-<h3 className="
-font-semibold
-text-white
-">
+<p>
 
-Namratha
+{item.code}
 
-</h3>
+</p>
 
 
 <p className="
@@ -276,7 +427,7 @@ text-xs
 text-slate-400
 ">
 
-Administrator
+{item.name}
 
 </p>
 
@@ -285,7 +436,73 @@ Administrator
 
 
 
+</button>
+
+
+
+))
+
+
+}
+
+
+
 </motion.div>
+
+
+}
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+
+{/* NOTIFICATION */}
+
+
+
+<button
+
+className="
+relative
+text-white
+hover:text-cyan-400
+transition
+"
+
+>
+
+
+<FiBell size={22}/>
+
+
+
+<span
+
+className="
+absolute
+right-0
+top-0
+h-2
+w-2
+rounded-full
+bg-cyan-400
+"
+
+/>
+
+
+
+</button>
+
 
 
 
@@ -295,9 +512,15 @@ Administrator
 
 
 
-</motion.header>
 
 
-);
+
+</header>
+
+
+
+)
+
+
 
 }
