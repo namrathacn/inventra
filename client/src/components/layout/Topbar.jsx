@@ -1,15 +1,12 @@
 import {
-  FiBell,
   FiSearch,
+  FiBell,
   FiChevronDown
 } from "react-icons/fi";
 
-import { useState } from "react";
-
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
 
 import { useCurrency } from "../../context/CurrencyContext";
-
 import { useSearch } from "../../context/SearchContext";
 
 
@@ -17,31 +14,84 @@ import { useSearch } from "../../context/SearchContext";
 export default function Topbar(){
 
 
-
 const {
-
 currency,
-
-setCurrency
-
+setCurrency,
+currencySymbol
 }=useCurrency();
 
 
 
-
 const {
-
 search,
-
 setSearch
-
 }=useSearch();
 
 
 
+const [currencyOpen,setCurrencyOpen]=useState(false);
+
+const [bellOpen,setBellOpen]=useState(false);
 
 
-const [open,setOpen]=useState(false);
+
+const currencyRef=useRef(null);
+const bellRef=useRef(null);
+
+
+
+
+
+useEffect(()=>{
+
+
+function close(e){
+
+
+if(
+currencyRef.current &&
+!currencyRef.current.contains(e.target)
+){
+
+setCurrencyOpen(false);
+
+}
+
+
+
+if(
+bellRef.current &&
+!bellRef.current.contains(e.target)
+){
+
+setBellOpen(false);
+
+}
+
+
+
+}
+
+
+
+document.addEventListener(
+"mousedown",
+close
+);
+
+
+return()=>{
+
+document.removeEventListener(
+"mousedown",
+close
+);
+
+};
+
+
+},[]);
+
 
 
 
@@ -50,41 +100,30 @@ const [open,setOpen]=useState(false);
 
 const currencies=[
 
-
 {
 code:"INR",
-symbol:"₹",
-name:"Indian Rupee"
+symbol:"₹"
 },
-
 
 {
 code:"USD",
-symbol:"$",
-name:"US Dollar"
+symbol:"$"
 },
-
 
 {
 code:"EUR",
-symbol:"€",
-name:"Euro"
+symbol:"€"
 },
-
 
 {
 code:"GBP",
-symbol:"£",
-name:"British Pound"
+symbol:"£"
 },
-
 
 {
 code:"JPY",
-symbol:"¥",
-name:"Japanese Yen"
+symbol:"¥"
 }
-
 
 ];
 
@@ -93,44 +132,22 @@ name:"Japanese Yen"
 
 
 
-const currentCurrency =
-
-currencies.find(
-
-item=>item.code===currency
-
-);
-
-
-
-
-
-
 return(
 
-
-
-<header
-
-className="
-relative
-z-50
+<div className="
 h-20
-px-6
+border-b
+border-white/10
+bg-[#070b18]/80
+backdrop-blur-xl
 flex
 items-center
 justify-between
-border-b
-border-white/10
-bg-black/20
-backdrop-blur-xl
-"
-
-
-
->
-
-
+px-8
+sticky
+top-0
+z-40
+">
 
 
 
@@ -140,29 +157,19 @@ backdrop-blur-xl
 
 
 
-<div
-
-className="
-flex
-items-center
-gap-3
-bg-white/5
-border
-border-white/10
-rounded-xl
-px-4
-py-2
-w-80
-"
-
-
-
->
+<div className="
+relative
+w-96
+">
 
 
 <FiSearch
 
 className="
+absolute
+left-4
+top-1/2
+-translate-y-1/2
 text-slate-400
 "
 
@@ -176,25 +183,35 @@ text-slate-400
 value={search}
 
 
-onChange={(e)=>setSearch(e.target.value)}
+onChange={(e)=>
+setSearch(e.target.value)
+}
 
 
-
-placeholder="Search products, orders..."
-
-
-
-className="
-bg-transparent
-outline-none
-text-white
-placeholder:text-slate-500
-w-full
+placeholder="
+Search products, orders...
 "
 
 
+className="
+w-full
+rounded-2xl
+bg-white/5
+border
+border-white/10
+py-3
+pl-12
+pr-4
+text-white
+placeholder:text-slate-500
+outline-none
+focus:border-cyan-400
+transition
+"
+
 
 />
+
 
 
 </div>
@@ -207,17 +224,12 @@ w-full
 
 
 
-<div
 
-className="
+<div className="
 flex
 items-center
 gap-5
-"
-
->
-
-
+">
 
 
 
@@ -231,78 +243,44 @@ gap-5
 
 <div
 
+ref={currencyRef}
+
 className="
 relative
-z-[200]
 "
+
 
 >
 
 
-
 <button
 
-
-onClick={()=>setOpen(!open)}
-
-
+onClick={()=>setCurrencyOpen(!currencyOpen)}
 
 className="
 flex
 items-center
 gap-2
+rounded-xl
 bg-white/5
 border
 border-white/10
-rounded-xl
-px-4
-py-2
+px-5
+py-3
 text-white
 hover:bg-white/10
 transition
 "
 
-
-
 >
 
 
-
-<span>
-
-{currentCurrency?.symbol}
-
-</span>
-
-
-
-<span>
+{currencySymbol}
 
 {currency}
 
-</span>
 
-
-
-<FiChevronDown
-
-className={
-
-open
-
-?
-
-"rotate-180 transition"
-
-:
-
-"transition"
-
-}
-
-/>
-
-
+<FiChevronDown/>
 
 </button>
 
@@ -310,130 +288,70 @@ open
 
 
 
-
-
-
 {
 
-open &&
+currencyOpen &&
 
-
-
-<motion.div
-
-
-initial={{
-
-opacity:0,
-
-y:-10
-
-}}
-
-
-animate={{
-
-opacity:1,
-
-y:0
-
-}}
-
-
-className="
+<div className="
 absolute
 right-0
-top-14
-w-52
+mt-3
+w-40
 rounded-2xl
-bg-slate-900
 border
 border-white/10
+bg-[#111827]
 shadow-2xl
 overflow-hidden
-z-[9999]
-"
-
-
-
->
+z-50
+">
 
 
 {
 
-
-currencies.map(item=>(
-
+currencies.map((item)=>(
 
 
 <button
 
-
 key={item.code}
-
-
 
 onClick={()=>{
 
-
 setCurrency(item.code);
 
-setOpen(false);
-
+setCurrencyOpen(false);
 
 }}
-
-
 
 
 className="
 w-full
 flex
-items-center
 gap-3
 px-5
 py-3
-text-white
-hover:bg-white/10
+text-slate-200
+hover:bg-cyan-500/20
 transition
-text-left
 "
-
 
 
 >
 
 
-
-<span className="text-lg">
+<span>
 
 {item.symbol}
 
 </span>
 
 
-
-<div>
-
-<p>
+<span>
 
 {item.code}
 
-</p>
-
-
-<p className="
-text-xs
-text-slate-400
-">
-
-{item.name}
-
-</p>
-
-
-</div>
-
+</span>
 
 
 </button>
@@ -447,7 +365,7 @@ text-slate-400
 
 
 
-</motion.div>
+</div>
 
 
 }
@@ -464,45 +382,109 @@ text-slate-400
 
 
 
-
-{/* NOTIFICATION */}
-
+{/* BELL */}
 
 
-<button
+
+<div
+
+ref={bellRef}
 
 className="
 relative
-text-white
-hover:text-cyan-400
-transition
 "
+
 
 >
 
 
-<FiBell size={22}/>
+<button
 
-
-
-<span
+onClick={()=>setBellOpen(!bellOpen)}
 
 className="
+relative
+rounded-xl
+bg-white/5
+border
+border-white/10
+p-3
+text-white
+hover:bg-white/10
+transition
+"
+
+
+>
+
+
+<FiBell className="
+text-xl
+"/>
+
+
+<span className="
 absolute
-right-0
-top-0
+right-2
+top-2
 h-2
 w-2
 rounded-full
 bg-cyan-400
-"
-
-/>
-
+"/>
 
 
 </button>
 
+
+
+
+
+{
+
+bellOpen &&
+
+
+<div className="
+absolute
+right-0
+mt-3
+w-72
+rounded-2xl
+border
+border-white/10
+bg-[#111827]
+p-5
+shadow-2xl
+z-50
+">
+
+
+<h3 className="
+font-bold
+text-white
+">
+
+Notifications
+
+</h3>
+
+
+<p className="
+text-sm
+text-slate-400
+mt-3
+">
+
+No new notifications
+
+</p>
+
+
+</div>
+
+
+}
 
 
 
@@ -514,13 +496,15 @@ bg-cyan-400
 
 
 
-
-</header>
-
+</div>
 
 
-)
 
+
+</div>
+
+
+);
 
 
 }

@@ -1,47 +1,39 @@
 ﻿import DashboardLayout from "../../layouts/DashboardLayout";
 
 import {
-FiDollarSign,
-FiPackage,
-FiShoppingCart,
-FiAlertTriangle,
-FiBox,
-FiClock,
-FiCheckCircle,
-FiTrendingUp
+  FiDollarSign,
+  FiBox,
+  FiShoppingCart,
+  FiAlertTriangle,
+  FiClock,
+  FiCheckCircle,
+  FiTrendingUp
 } from "react-icons/fi";
 
-
-import {
-motion
-} from "framer-motion";
-
+import { motion } from "framer-motion";
 
 import StatCard from "../../components/cards/StatCard";
-
 import RevenueChart from "../../components/charts/RevenueChart";
 
-
 import SalesTrend from "./SalesTrend";
-
 import TopProducts from "./TopProducts";
 
-
-import {
-useCurrency
-} from "../../context/CurrencyContext";
-
-
+import { useCurrency } from "../../context/CurrencyContext";
+import { useSearch } from "../../context/SearchContext";
 
 
 export default function Dashboard(){
-
 
 
 const {
 formatCurrency
 }=useCurrency();
 
+
+
+const {
+search
+}=useSearch();
 
 
 
@@ -51,28 +43,28 @@ const orders=[
 {
 id:"#1024",
 product:"MacBook Pro",
-price:"₹1,20,000",
+price:120000,
 status:"Completed"
 },
 
 {
 id:"#1025",
 product:"Gaming Keyboard",
-price:"₹8,500",
+price:8500,
 status:"Pending"
 },
 
 {
 id:"#1026",
 product:"4K Monitor",
-price:"₹32,000",
+price:32000,
 status:"Completed"
 },
 
 {
 id:"#1027",
 product:"Wireless Mouse",
-price:"₹2,500",
+price:2500,
 status:"Completed"
 }
 
@@ -81,9 +73,21 @@ status:"Completed"
 
 
 
+const filteredOrders = orders.filter((order)=>
+
+order.product
+.toLowerCase()
+.includes(
+search.toLowerCase()
+)
+
+);
+
+
+
+
 
 return(
-
 
 <DashboardLayout>
 
@@ -92,9 +96,7 @@ return(
 
 
 
-
-
-{/* STAT CARDS */}
+{/* CARDS */}
 
 
 <div className="
@@ -104,24 +106,23 @@ lg:grid-cols-4
 ">
 
 
-
 <StatCard
 
 title="Revenue"
 
 value={1528860}
 
-format={formatCurrency}
-
-change="+18.4%"
-
-color="#3B82F6"
+isCurrency={true}
 
 icon={<FiDollarSign/>}
 
+glowColor="bg-emerald-500"
+
+iconBackground="bg-emerald-500/20"
+
+iconColor="text-emerald-400"
+
 />
-
-
 
 
 
@@ -129,16 +130,17 @@ icon={<FiDollarSign/>}
 
 title="Orders"
 
-value={267}
-
-change="+7.2%"
-
-color="#06B6D4"
+value="267"
 
 icon={<FiShoppingCart/>}
 
-/>
+glowColor="bg-blue-500"
 
+iconBackground="bg-blue-500/20"
+
+iconColor="text-blue-400"
+
+/>
 
 
 
@@ -147,16 +149,17 @@ icon={<FiShoppingCart/>}
 
 title="Products"
 
-value={421}
+value="421"
 
-change="+3.8%"
+icon={<FiBox/>}
 
-color="#10B981"
+glowColor="bg-purple-500"
 
-icon={<FiPackage/>}
+iconBackground="bg-purple-500/20"
+
+iconColor="text-purple-400"
 
 />
-
 
 
 
@@ -165,29 +168,22 @@ icon={<FiPackage/>}
 
 title="Low Stock"
 
-value={14}
-
-change="-5 today"
-
-color="#F59E0B"
+value="14"
 
 icon={<FiAlertTriangle/>}
 
-/>
+glowColor="bg-red-500"
 
+iconBackground="bg-red-500/20"
+
+iconColor="text-red-400"
+
+/>
 
 
 </div>
 
 
-
-
-
-
-
-
-
-{/* REVENUE CHART */}
 
 
 
@@ -199,12 +195,6 @@ icon={<FiAlertTriangle/>}
 
 
 
-
-
-{/* SALES OVERVIEW + INVENTORY */}
-
-
-
 <div className="
 grid
 gap-6
@@ -213,23 +203,17 @@ lg:grid-cols-2
 
 
 
-
-
 <motion.div
-
 
 initial={{
 opacity:0,
 y:20
 }}
 
-
 animate={{
 opacity:1,
 y:0
 }}
-
-
 
 className="
 rounded-3xl
@@ -267,8 +251,6 @@ Monthly performance
 
 
 
-
-
 <div className="
 mt-6
 space-y-5
@@ -278,13 +260,9 @@ space-y-5
 {
 
 [
-
 ["January",75],
-
 ["February",60],
-
 ["March",85],
-
 ["April",70]
 
 ].map((item)=>(
@@ -300,7 +278,6 @@ text-sm
 text-slate-300
 ">
 
-
 <span>
 {item[0]}
 </span>
@@ -312,7 +289,6 @@ text-slate-300
 
 
 </div>
-
 
 
 
@@ -334,13 +310,11 @@ from-blue-500
 to-cyan-400
 "
 
-
 style={{
 
 width:`${item[1]}%`
 
 }}
-
 
 />
 
@@ -358,7 +332,6 @@ width:`${item[1]}%`
 }
 
 
-
 </div>
 
 
@@ -369,16 +342,7 @@ width:`${item[1]}%`
 
 
 
-
-
-
-
-{/* INVENTORY */}
-
-
-
 <motion.div
-
 
 className="
 rounded-3xl
@@ -389,9 +353,7 @@ p-6
 backdrop-blur-xl
 "
 
-
 >
-
 
 
 <h2 className="
@@ -417,8 +379,6 @@ Current stock overview
 
 
 
-
-
 <div className="
 grid
 grid-cols-3
@@ -427,14 +387,12 @@ mt-8
 ">
 
 
-
 <div className="
 rounded-2xl
 bg-green-500/10
 p-5
 text-center
 ">
-
 
 <FiBox className="
 mx-auto
@@ -469,17 +427,12 @@ Available
 
 
 
-
-
-
-
 <div className="
 rounded-2xl
 bg-yellow-500/10
 p-5
 text-center
 ">
-
 
 <FiAlertTriangle className="
 mx-auto
@@ -511,10 +464,6 @@ Low
 
 
 </div>
-
-
-
-
 
 
 
@@ -558,29 +507,14 @@ Out
 </div>
 
 
-
 </div>
-
-
 
 
 </motion.div>
 
 
-
 </div>
-
-
-
-
-
-
-
-
-
-{/* SALES GROWTH + TOP PRODUCTS */}
-
-
+// SALES TREND + TOP PRODUCTS
 
 <div className="
 grid
@@ -588,12 +522,9 @@ gap-6
 lg:grid-cols-2
 ">
 
-
 <SalesTrend/>
 
-
 <TopProducts/>
-
 
 </div>
 
@@ -605,21 +536,17 @@ lg:grid-cols-2
 {/* RECENT ORDERS */}
 
 
-
 <motion.div
-
 
 initial={{
 opacity:0,
 y:20
 }}
 
-
 animate={{
 opacity:1,
 y:0
 }}
-
 
 className="
 rounded-3xl
@@ -629,7 +556,6 @@ bg-white/5
 p-6
 backdrop-blur-xl
 "
-
 
 >
 
@@ -642,7 +568,6 @@ justify-between
 
 
 <div>
-
 
 <h2 className="
 text-xl
@@ -670,11 +595,15 @@ Latest customer transactions
 
 
 
-<button className="
+<button
+
+className="
 text-cyan-400
 text-sm
 hover:text-cyan-300
-">
+"
+
+>
 
 View all
 
@@ -682,9 +611,6 @@ View all
 
 
 </div>
-
-
-
 
 
 
@@ -698,8 +624,10 @@ space-y-4
 
 {
 
+filteredOrders.length > 0 ?
 
-orders.map((order)=>(
+
+filteredOrders.map((order)=>(
 
 
 <div
@@ -717,7 +645,6 @@ hover:bg-white/10
 transition
 "
 
-
 >
 
 
@@ -734,20 +661,21 @@ text-white
 </h3>
 
 
-
 <p className="
 text-sm
 text-slate-400
 ">
 
-{order.id} • {order.price}
+{order.id}
+
+•
+
+{formatCurrency(order.price)}
 
 </p>
 
 
 </div>
-
-
 
 
 
@@ -791,16 +719,30 @@ text-slate-300
 </span>
 
 
-</div>
-
-
-
-
 
 </div>
+
+
+
+</div>
+
 
 
 ))
+
+
+:
+
+
+<div className="
+text-center
+text-slate-400
+py-8
+">
+
+No orders found
+
+</div>
 
 
 }
@@ -808,8 +750,6 @@ text-slate-300
 
 
 </div>
-
-
 
 
 
@@ -822,9 +762,7 @@ text-slate-300
 
 
 
-
 {/* AI INVENTORY INSIGHTS */}
-
 
 
 
@@ -841,12 +779,6 @@ animate={{
 opacity:1,
 y:0
 }}
-
-
-transition={{
-duration:.5
-}}
-
 
 
 className="
@@ -886,6 +818,7 @@ AI Inventory Insights
 </h2>
 
 
+
 <p className="
 text-sm
 text-slate-400
@@ -897,7 +830,9 @@ Smart business analysis and predictions
 </p>
 
 
+
 </div>
+
 
 
 
@@ -908,24 +843,15 @@ bg-purple-500/20
 p-3
 ">
 
-
-<FiTrendingUp
-
-className="
+<FiTrendingUp className="
 text-purple-400
 text-2xl
-"
-
-/>
-
+"/>
 
 </div>
 
 
-
 </div>
-
-
 
 
 
@@ -941,13 +867,6 @@ md:grid-cols-4
 ">
 
 
-
-
-
-
-
-
-{/* PROFIT */}
 
 
 
@@ -970,6 +889,7 @@ Profit Analysis
 </h3>
 
 
+
 <h4 className="
 text-3xl
 font-bold
@@ -977,9 +897,10 @@ text-white
 mt-3
 ">
 
-₹4.82L
+{formatCurrency(482000)}
 
 </h4>
+
 
 
 <p className="
@@ -993,16 +914,13 @@ mt-2
 </p>
 
 
+
 </div>
 
 
 
 
 
-
-
-
-{/* LOSS */}
 
 
 
@@ -1025,6 +943,8 @@ Loss Detection
 </h3>
 
 
+
+
 <h4 className="
 text-3xl
 font-bold
@@ -1032,9 +952,10 @@ text-white
 mt-3
 ">
 
-₹38.5K
+{formatCurrency(38500)}
 
 </h4>
+
 
 
 <p className="
@@ -1048,16 +969,12 @@ Low selling products affecting revenue
 </p>
 
 
+
 </div>
 
 
 
 
-
-
-
-
-{/* DEAD STOCK */}
 
 
 
@@ -1080,6 +997,8 @@ Dead Stock Alert
 </h3>
 
 
+
+
 <h4 className="
 text-3xl
 font-bold
@@ -1090,6 +1009,7 @@ mt-3
 12
 
 </h4>
+
 
 
 <p className="
@@ -1103,16 +1023,13 @@ Items inactive for 30 days
 </p>
 
 
+
 </div>
 
 
 
 
 
-
-
-
-{/* FORECAST */}
 
 
 
@@ -1135,6 +1052,8 @@ Demand Forecast
 </h3>
 
 
+
+
 <h4 className="
 text-3xl
 font-bold
@@ -1145,6 +1064,7 @@ mt-3
 +18%
 
 </h4>
+
 
 
 <p className="
@@ -1158,26 +1078,18 @@ Expected sales increase
 </p>
 
 
-</div>
-
-
-
-
-
 
 </div>
 
 
 
+
+
+</div>
 
 
 
 </motion.div>
-
-
-
-
-
 
 
 
@@ -1188,7 +1100,6 @@ Expected sales increase
 </DashboardLayout>
 
 
-)
-
+);
 
 }

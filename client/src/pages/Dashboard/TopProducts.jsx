@@ -1,83 +1,78 @@
-import {
-FiStar,
-FiTrendingUp
-} from "react-icons/fi";
-
-import {
-motion
-} from "framer-motion";
+import { FiBox, FiTrendingUp } from "react-icons/fi";
+import { motion } from "framer-motion";
+import { useSearch } from "../../context/SearchContext";
 
 
 export default function TopProducts(){
 
 
-const products=[
+const {
+search
+}=useSearch();
 
+
+
+const products=[
 
 {
 name:"MacBook Pro",
 category:"Laptop",
-sales:"120 units sold",
-revenue:"₹8,40,000",
-growth:"+24%"
+sales:120,
+amount:"₹1,20,000"
 },
-
 
 {
-name:"Gaming Accessories",
+name:"Gaming Keyboard",
 category:"Accessories",
-sales:"98 units sold",
-revenue:"₹2,25,000",
-growth:"+18%"
+sales:85,
+amount:"₹8,500"
 },
-
 
 {
 name:"4K Monitor",
 category:"Display",
-sales:"76 units sold",
-revenue:"₹3,20,000",
-growth:"+12%"
+sales:70,
+amount:"₹32,000"
 },
 
-
 {
-name:"Wireless Devices",
-category:"Electronics",
-sales:"54 units sold",
-revenue:"₹1,40,000",
-growth:"+9%"
+name:"Wireless Mouse",
+category:"Accessories",
+sales:54,
+amount:"₹2,500"
 }
-
-
 
 ];
 
 
 
 
-return(
+const filteredProducts = products.filter((item)=>
 
+item.name
+.toLowerCase()
+.includes(
+search.toLowerCase()
+)
+
+);
+
+
+
+
+return(
 
 <motion.div
 
-
 initial={{
 opacity:0,
-x:30
+y:20
 }}
-
 
 animate={{
 opacity:1,
-x:0
+y:0
 }}
-
-
-transition={{
-duration:.5
-}}
-
 
 className="
 rounded-3xl
@@ -86,12 +81,9 @@ border-white/10
 bg-white/5
 p-6
 backdrop-blur-xl
-shadow-xl
 "
 
-
 >
-
 
 
 <div className="
@@ -118,10 +110,9 @@ Top Products
 <p className="
 text-sm
 text-slate-400
-mt-1
 ">
 
-Best selling products
+Best selling items
 
 </p>
 
@@ -130,30 +121,13 @@ Best selling products
 
 
 
-
-<div className="
-rounded-2xl
-bg-yellow-500/20
-p-3
-">
-
-
-<FiStar
-
-className="
+<FiTrendingUp className="
+text-cyan-400
 text-2xl
-text-yellow-400
-"
-
-/>
+"/>
 
 
 </div>
-
-
-</div>
-
-
 
 
 
@@ -167,39 +141,51 @@ space-y-4
 
 {
 
-products.map((product,index)=>(
+filteredProducts.length>0 ?
 
 
-<motion.div
+filteredProducts.map((product,index)=>(
 
 
-whileHover={{
-scale:1.03
-}}
-
+<div
 
 key={product.name}
 
-
 className="
+flex
+items-center
+justify-between
 rounded-2xl
-border
-border-white/10
 bg-white/5
 p-4
+hover:bg-white/10
 transition
 "
-
-
 
 >
 
 
 <div className="
 flex
-justify-between
 items-center
+gap-4
 ">
+
+
+<div className="
+rounded-xl
+bg-purple-500/20
+p-3
+">
+
+<FiBox className="
+text-purple-400
+text-xl
+"/>
+
+</div>
+
+
 
 
 <div>
@@ -228,6 +214,9 @@ text-slate-400
 </div>
 
 
+</div>
+
+
 
 
 
@@ -236,29 +225,22 @@ text-right
 ">
 
 
-<h4 className="
+<p className="
 font-bold
 text-cyan-400
 ">
 
-{product.revenue}
+{product.amount}
 
-</h4>
-
+</p>
 
 
 <p className="
-flex
-items-center
-justify-end
-gap-1
 text-sm
 text-green-400
 ">
 
-<FiTrendingUp/>
-
-{product.growth}
+↗ +9%
 
 </p>
 
@@ -268,46 +250,25 @@ text-green-400
 
 
 
-</div>
-
-
-
-
-
-
-
-<div className="
-mt-4
-flex
-justify-between
-text-sm
-text-slate-400
-">
-
-
-<span>
-
-Sales
-
-</span>
-
-
-<span>
-
-{product.sales}
-
-</span>
-
 
 </div>
-
-
-
-
-</motion.div>
 
 
 ))
+
+
+:
+
+<div className="
+text-center
+text-slate-400
+py-6
+">
+
+No products found
+
+</div>
+
 
 
 }
@@ -318,12 +279,10 @@ Sales
 
 
 
-
-
-
 </motion.div>
 
 
-)
+);
+
 
 }

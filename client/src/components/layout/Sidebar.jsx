@@ -1,367 +1,246 @@
 import {
-
-FiGrid,
-FiPackage,
-FiShoppingCart,
-FiPieChart,
-FiUsers,
-FiUser,
-FiSettings
-
+  FiHome,
+  FiBox,
+  FiShoppingCart,
+  FiBarChart2,
+  FiUsers,
+  FiUser,
+  FiSettings,
+  FiLogOut,
+  FiPackage
 } from "react-icons/fi";
 
+import { NavLink, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
-import {
-NavLink
-} from "react-router-dom";
-
-
-import {
-motion
-} from "framer-motion";
+import { useAuth } from "../../context/AuthContext";
 
 
-import Logo from "./Logo";
-
-
-
-
-
-const links=[
-
-
+const menuItems=[
 {
 name:"Dashboard",
 path:"/dashboard",
-icon:<FiGrid/>
+icon:FiHome
 },
-
-
 {
 name:"Products",
 path:"/products",
-icon:<FiPackage/>
+icon:FiBox
 },
-
-
 {
 name:"Orders",
 path:"/orders",
-icon:<FiShoppingCart/>
+icon:FiShoppingCart
 },
-
-
 {
 name:"Reports",
 path:"/reports",
-icon:<FiPieChart/>
+icon:FiBarChart2
 },
-
-
 {
 name:"Staff",
 path:"/staff",
-icon:<FiUsers/>
+icon:FiUsers
 },
-
-
 {
 name:"Profile",
 path:"/profile",
-icon:<FiUser/>
+icon:FiUser
 },
-
-
 {
 name:"Settings",
 path:"/settings",
-icon:<FiSettings/>
+icon:FiSettings
 }
-
-
 ];
-
-
-
-
 
 
 
 export default function Sidebar(){
 
 
+const {
+user,
+logout
+}=useAuth();
+
+
+const navigate=useNavigate();
+
+
 
 return(
 
+<motion.aside
 
-<aside className="
+initial={{
+x:-80,
+opacity:0
+}}
 
-relative
+animate={{
+x:0,
+opacity:1
+}}
 
+transition={{
+duration:.6
+}}
+
+className="
+fixed
+top-0
+left-0
 h-screen
-
 w-72
-
-shrink-0
-
-border-r
-
-border-white/10
-
-bg-white/[0.04]
-
+flex
+flex-col
+overflow-hidden
+bg-[#050816]/90
 backdrop-blur-2xl
+border-r
+border-white/10
+px-5
+py-6
+"
 
-p-6
-
-">
-
-
-
-
-
-
-<Logo/>
+>
 
 
+{/* animated background */}
 
+<motion.div
 
+animate={{
+scale:[1,1.2,1]
+}}
 
+transition={{
+duration:8,
+repeat:Infinity
+}}
 
+className="
+absolute
+-left-20
+-top-20
+h-72
+w-72
+rounded-full
+bg-cyan-500/20
+blur-3xl
+"
 
-<nav className="
-
-mt-10
-
-space-y-3
-
-">
-
-
-{
-
-links.map((item,index)=>(
+/>
 
 
 
 <motion.div
 
-
-key={item.path}
-
-
-initial={{
-
-x:-25,
-
-opacity:0
-
-}}
-
-
 animate={{
-
-x:0,
-
-opacity:1
-
+scale:[1,1.3,1]
 }}
-
 
 transition={{
-
-delay:index*.08
-
+duration:10,
+repeat:Infinity
 }}
-
-
->
-
-
-<NavLink
-
-
-to={item.path}
-
-
-
-className={({isActive})=>`
-
-
-flex
-
-items-center
-
-gap-4
-
-rounded-2xl
-
-px-5
-
-py-4
-
-transition-all
-
-duration-300
-
-
-
-${
-
-isActive
-
-?
-
-"bg-blue-600 text-white shadow-lg shadow-blue-500/30"
-
-:
-
-"text-slate-400 hover:bg-white/10 hover:text-white"
-
-}
-
-
-
-`}
-
-
-
->
-
-
-
-<motion.span
-
-
-whileHover={{
-
-scale:1.2,
-
-x:5
-
-}}
-
-
 
 className="
-
-text-xl
-
+absolute
+-right-20
+-bottom-20
+h-72
+w-72
+rounded-full
+bg-purple-500/20
+blur-3xl
 "
 
+/>
 
+
+
+
+
+{/* BRAND */}
+
+
+<div
+className="
+relative
+z-10
+mb-10
+flex
+items-center
+gap-4
+"
 >
 
 
-{item.icon}
+<motion.div
 
+whileHover={{
+rotate:10,
+scale:1.1
+}}
 
-</motion.span>
+className="
+h-14
+w-14
+rounded-2xl
+bg-gradient-to-br
+from-cyan-400
+via-blue-500
+to-purple-600
+flex
+items-center
+justify-center
+shadow-xl
+shadow-cyan-500/30
+"
 
+>
 
-
-
-
-<span className="
-
-font-medium
-
-">
-
-
-{item.name}
-
-
-</span>
-
-
-
-</NavLink>
-
+<FiPackage
+className="
+text-white
+text-3xl
+"
+/>
 
 
 </motion.div>
 
 
 
-))
+
+<div>
+
+<h1
+className="
+text-3xl
+font-black
+tracking-tight
+text-white
+"
+>
+Inventra
+</h1>
 
 
-}
-
-
-
-</nav>
-
-
-
-
-
-
-
-
-
-
-{/* Bottom Card */}
-
-
-
-<div className="
-
-absolute
-
-bottom-6
-
-left-6
-
-right-6
-
-rounded-3xl
-
-border
-
-border-cyan-400/20
-
-bg-cyan-400/10
-
-p-5
-
-backdrop-blur-xl
-
-">
-
-
-<h3 className="
-
-font-bold
-
-text-cyan-300
-
-">
-
-
-Inventra Pro
-
-
-</h3>
-
-
-
-<p className="
-
-mt-2
-
-text-sm
-
-text-slate-400
-
-">
-
-
-Smart inventory management
-
-
+<p
+className="
+text-xs
+tracking-widest
+text-cyan-400
+"
+>
+SMART INVENTORY
 </p>
+
+
+</div>
 
 
 
@@ -372,10 +251,214 @@ Smart inventory management
 
 
 
-</aside>
+
+{/* MENU */}
+
+
+<nav
+className="
+relative
+z-10
+flex-1
+space-y-2
+"
+>
+
+
+{
+menuItems.map(item=>{
+
+
+const Icon=item.icon;
+
+
+return(
+
+<NavLink
+key={item.name}
+to={item.path}
+>
+
+
+{({isActive})=>(
+
+
+<motion.div
+
+whileHover={{
+x:8
+}}
+
+className={`
+flex
+items-center
+gap-4
+rounded-2xl
+px-4
+py-3
+transition-all
+
+${
+isActive
+?
+"bg-white/10 text-white shadow-lg border border-white/10"
+:
+"text-slate-400 hover:text-white hover:bg-white/5"
+}
+
+`}
+
+>
+
+
+<Icon
+className="text-xl"
+/>
+
+
+<span className="font-semibold">
+
+{item.name}
+
+</span>
+
+
+</motion.div>
+
+
+)}
+
+
+</NavLink>
 
 
 )
 
+})
+}
+
+
+</nav>
+
+
+
+
+
+
+
+{/* USER */}
+
+<div
+className="
+relative
+z-10
+rounded-3xl
+border
+border-white/10
+bg-white/5
+p-4
+backdrop-blur-xl
+"
+>
+
+
+<div
+className="
+flex
+items-center
+gap-3
+"
+>
+
+
+<div
+className="
+h-11
+w-11
+rounded-xl
+bg-gradient-to-br
+from-pink-500
+to-purple-600
+flex
+items-center
+justify-center
+font-bold
+text-white
+"
+>
+
+{
+user?.name?.charAt(0) || "A"
+}
+
+</div>
+
+
+<div>
+
+<p className="
+text-white
+font-semibold
+">
+
+{
+user?.name || "Admin"
+}
+
+</p>
+
+<p className="
+text-xs
+text-slate-400
+">
+Store Manager
+</p>
+
+</div>
+
+
+</div>
+
+
+
+<button
+
+onClick={()=>{
+
+logout();
+
+navigate("/");
+
+}}
+
+className="
+mt-4
+w-full
+rounded-xl
+bg-red-500/10
+py-2
+text-red-400
+font-semibold
+hover:bg-red-500/20
+transition
+"
+
+>
+
+<FiLogOut className="inline mr-2"/>
+
+Logout
+
+</button>
+
+
+</div>
+
+
+
+
+</motion.aside>
+
+)
 
 }

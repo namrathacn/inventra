@@ -5,38 +5,37 @@ const SearchContext = createContext();
 
 
 
-export function SearchProvider({ children }) {
+export function SearchProvider({children}){
 
 
-  const [search, setSearch] = useState("");
+const [search,setSearch] = useState("");
 
 
 
-  return (
+return(
 
-    <SearchContext.Provider
+<SearchContext.Provider
 
-      value={{
-        search,
-        setSearch
-      }}
+value={{
+search,
+setSearch
+}}
 
-    >
+>
 
-      {children}
+{children}
 
-    </SearchContext.Provider>
+</SearchContext.Provider>
 
-  );
+);
 
 
 }
 
 
 
-
 export function useSearch(){
 
-  return useContext(SearchContext);
+return useContext(SearchContext);
 
 }

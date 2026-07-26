@@ -1,78 +1,92 @@
 import Sidebar from "../components/layout/Sidebar";
-
 import Topbar from "../components/layout/Topbar";
 
-import { useTheme } from "../context/ThemeContext";
+
+export default function DashboardLayout({ children }) {
 
 
-
-export default function DashboardLayout({children}){
-
-
-const {theme}=useTheme();
-
-
-
-
-return(
-
-
+return (
 
 <div
-
-className={
-
-theme==="dark"
-
-?
-
-"min-h-screen bg-slate-950 text-white flex"
-
-:
-
-"min-h-screen bg-slate-100 text-slate-900 flex"
-
-}
-
+className="
+min-h-screen
+bg-[#050816]
+text-white
+flex
+"
 >
 
 
+{/* Fixed Sidebar */}
 
-<Sidebar/>
+<aside
+className="
+fixed
+left-0
+top-0
+h-screen
+w-72
+z-50
+"
+>
+
+<Sidebar />
+
+</aside>
 
 
 
 
-<div className="flex-1">
+
+{/* Main Content */}
+
+<div
+className="
+ml-72
+flex-1
+min-h-screen
+"
+>
+
+
+{/* Topbar */}
+
+<div
+className="
+sticky
+top-0
+z-40
+"
+>
+
+<Topbar />
+
+</div>
 
 
 
-<Topbar/>
 
+{/* Scroll Area */}
 
-
-
-<main className="p-6">
-
+<main
+className="
+p-6
+md:p-8
+"
+>
 
 {children}
-
 
 </main>
 
 
 
-
 </div>
 
 
 
-
 </div>
 
-
-
-)
-
+);
 
 }

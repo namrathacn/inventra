@@ -1,289 +1,198 @@
-import {motion} from "framer-motion";
+import { motion } from "framer-motion";
+import { useCurrency } from "../../context/CurrencyContext";
 
 
 export default function StatCard({
+  title,
+  value,
+  icon,
 
-title,
-value,
-change,
-color,
-icon,
-format
+  isCurrency = false,
 
-}){
+  glowColor = "bg-cyan-500",
+  iconBackground = "bg-cyan-500/20",
+  iconColor = "text-cyan-400"
+}) {
 
 
-return(
+  const {
+    formatCurrency
+  } = useCurrency();
 
 
-<motion.div
 
+  const displayValue = isCurrency
+    ? formatCurrency(value)
+    : value;
 
-initial={{
-opacity:0,
-y:25
-}}
 
 
-animate={{
-opacity:1,
-y:0
-}}
+  return (
 
+    <motion.div
 
-whileHover={{
+      initial={{
+        opacity: 0,
+        y: 30
+      }}
 
-y:-8,
+      animate={{
+        opacity: 1,
+        y: 0
+      }}
 
-scale:1.02
+      transition={{
+        duration: 0.5
+      }}
 
-}}
+      whileHover={{
+        y: -8,
+        scale: 1.03
+      }}
 
+      className="
+      relative
+      overflow-hidden
+      rounded-3xl
+      border
+      border-white/10
+      bg-white/5
+      p-6
+      backdrop-blur-xl
+      shadow-xl
+      "
+    >
 
-transition={{
-duration:.45
-}}
 
 
+      {/* Corner Glow */}
 
-className="
-relative
-overflow-hidden
-rounded-3xl
-border
-border-white/10
-bg-white/[0.07]
-backdrop-blur-2xl
-p-6
-shadow-xl
-"
+      <div
+        className={`
+        absolute
+        -right-16
+        -top-16
+        h-44
+        w-44
+        rounded-full
+        ${glowColor}
+        opacity-30
+        blur-3xl
+        `}
+      />
 
->
 
 
-{/* Background Glow */}
 
+      <div
+        className="
+        relative
+        z-10
+        flex
+        items-start
+        justify-between
+        "
+      >
 
-<div
 
-className="
-absolute
--right-10
--top-10
-h-36
-w-36
-rounded-full
-blur-3xl
-opacity-30
-"
 
-style={{
+        {/* Content */}
 
-background:color
+        <div className="min-w-0">
 
-}}
 
-/>
+          <p
+            className="
+            text-sm
+            font-semibold
+            text-slate-400
+            "
+          >
+            {title}
+          </p>
 
 
 
 
+          <motion.h2
 
-{/* Top */}
+            initial={{
+              opacity: 0,
+              scale: 0.8
+            }}
 
+            animate={{
+              opacity: 1,
+              scale: 1
+            }}
 
-<div className="
-relative
-flex
-items-start
-justify-between
-">
+            transition={{
+              delay: 0.2
+            }}
 
+            className="
+            mt-3
+            whitespace-nowrap
+            text-3xl
+            lg:text-4xl
+            font-extrabold
+            tracking-tight
+            text-white
+            "
+          >
 
+            {displayValue}
 
-<div>
+          </motion.h2>
 
 
-<p className="
-text-sm
-font-medium
-text-slate-400
-">
 
-{title}
+        </div>
 
-</p>
 
 
 
 
 
-<h2 className="
-mt-3
-text-4xl
-font-bold
-tracking-tight
-text-white
-">
+        {/* Icon */}
 
-{
+        <motion.div
 
-format
-?
-format(value)
-:
-value
+          whileHover={{
+            rotate: 10,
+            scale: 1.1
+          }}
 
-}
+          className={`
+          flex
+          h-16
+          w-16
+          shrink-0
+          items-center
+          justify-center
+          rounded-2xl
+          ${iconBackground}
+          ${iconColor}
+          border
+          border-white/10
+          text-3xl
+          shadow-lg
+          `}
+        >
 
-</h2>
+          {icon}
 
+        </motion.div>
 
 
 
+      </div>
 
-<div className="
-mt-4
-flex
-items-center
-gap-2
-"
->
 
 
-<span
+    </motion.div>
 
-className="
-rounded-full
-bg-green-500/20
-px-3
-py-1
-text-xs
-font-semibold
-text-green-400
-"
 
->
-
-↑ {change}
-
-</span>
-
-
-
-</div>
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-{/* ICON */}
-
-
-<motion.div
-
-
-animate={{
-
-x:[0,5,0],
-
-y:[0,-5,0]
-
-}}
-
-
-transition={{
-
-duration:2.5,
-
-repeat:Infinity,
-
-ease:"easeInOut"
-
-}}
-
-
-
-className="
-flex
-h-16
-w-16
-items-center
-justify-center
-rounded-2xl
-text-3xl
-text-white
-shadow-2xl
-"
-
-style={{
-
-background:
-
-`linear-gradient(135deg,${color},rgba(255,255,255,.15))`
-
-}}
-
-
-
->
-
-
-{icon}
-
-
-</motion.div>
-
-
-
-
-
-
-</div>
-
-
-
-
-
-
-{/* Bottom line */}
-
-
-<div
-
-className="
-absolute
-bottom-0
-left-0
-h-1
-w-full
-opacity-60
-"
-
-style={{
-
-background:
-
-`linear-gradient(90deg,transparent,${color},transparent)`
-
-}}
-
-
-/>
-
-
-
-</motion.div>
-
-
-)
+  );
 
 }

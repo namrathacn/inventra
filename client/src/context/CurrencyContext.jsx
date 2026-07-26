@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 
 
 const CurrencyContext = createContext();
@@ -14,56 +14,57 @@ export function CurrencyProvider({ children }) {
 
   const currencyData = {
 
-
     INR: {
       symbol: "₹",
       rate: 1
     },
-
 
     USD: {
       symbol: "$",
       rate: 0.012
     },
 
-
     EUR: {
       symbol: "€",
       rate: 0.011
     },
-
 
     GBP: {
       symbol: "£",
       rate: 0.0095
     },
 
-
     JPY: {
       symbol: "¥",
       rate: 1.8
     }
-
 
   };
 
 
 
 
-
   function convertAmount(amount) {
 
+    return Number(amount || 0) * currencyData[currency].rate;
 
-    if (!amount) return "0.00";
-
-
-    const value =
-      Number(amount) *
-      currencyData[currency].rate;
+  }
 
 
 
-    return value.toFixed(2);
+
+
+  function formatCurrency(amount) {
+
+
+    return (
+
+      currencyData[currency].symbol +
+
+      Math.round(convertAmount(amount))
+        .toLocaleString("en-IN")
+
+    );
 
 
   }
@@ -73,53 +74,48 @@ export function CurrencyProvider({ children }) {
 
 
 
+  const value = useMemo(
 
-  return (
+    () => ({
 
-    <CurrencyContext.Provider
+      currency,
 
+      setCurrency,
 
-      value={{
+      currencySymbol: currencyData[currency].symbol,
 
-        currency,
+      convertAmount,
 
-        setCurrency,
+      formatCurrency,
 
+      formatMoney: formatCurrency
 
-        currencySymbol:
-          currencyData[currency].symbol,
+    }),
 
-
-        convertAmount
-
-
-      }}
-
-
-    >
-
-
-      {children}
-
-
-    </CurrencyContext.Provider>
-
+    [currency]
 
   );
 
+
+
+
+  return (
+
+    <CurrencyContext.Provider value={value}>
+
+      {children}
+
+    </CurrencyContext.Provider>
+
+  );
 
 }
 
 
 
 
-
-
-
 export function useCurrency(){
 
-
   return useContext(CurrencyContext);
-
 
 }
