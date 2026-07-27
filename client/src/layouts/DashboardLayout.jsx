@@ -13,21 +13,25 @@ min-h-screen
 bg-[#050816]
 text-white
 flex
+overflow-x-hidden
 "
 >
 
 
-{/* Fixed Sidebar */}
+
+{/* SIDEBAR */}
 
 <aside
+
 className="
 fixed
 left-0
 top-0
 h-screen
 w-72
-z-50
+z-30
 "
+
 >
 
 <Sidebar />
@@ -38,25 +42,36 @@ z-50
 
 
 
-{/* Main Content */}
+
+
+{/* MAIN AREA */}
 
 <div
+
 className="
 ml-72
 flex-1
 min-h-screen
+relative
+z-10
 "
+
 >
 
 
-{/* Topbar */}
+
+
+
+{/* TOPBAR */}
 
 <div
+
 className="
 sticky
 top-0
-z-40
+z-20
 "
+
 >
 
 <Topbar />
@@ -66,18 +81,27 @@ z-40
 
 
 
-{/* Scroll Area */}
+
+
+
+{/* CONTENT */}
 
 <main
+
 className="
+relative
+z-10
 p-6
 md:p-8
 "
+
 >
 
 {children}
 
 </main>
+
+
 
 
 

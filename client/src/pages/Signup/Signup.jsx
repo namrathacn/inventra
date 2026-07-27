@@ -1,156 +1,1040 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { motion } from "framer-motion";
+
+import {
+  useNavigate,
+  Link
+} from "react-router-dom";
+
+
 import {
   createUserWithEmailAndPassword,
   signInWithPopup,
-  GoogleAuthProvider,
+  GoogleAuthProvider
 } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
-import { auth, db } from "../../firebase";
-import AuthLayout from "../../components/layout/AuthLayout";
 
-export default function Signup() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await setDoc(doc(db, "users", userCredential.user.uid), {
-        name,
-        email,
-        role: "staff",
-      });
-      navigate("/dashboard");
-    } catch (err) {
-      setError(err.message.includes("email-already") ? "Email already in use" : "Signup failed, try again");
-    }
-    setLoading(false);
-  };
+import {
+  doc,
+  setDoc,
+  getDoc
+} from "firebase/firestore";
 
-  const handleGoogleSignIn = async () => {
-    setError("");
-    setGoogleLoading(true);
-    try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const userRef = doc(db, "users", result.user.uid);
-      const userSnap = await getDoc(userRef);
-      if (!userSnap.exists()) {
-        await setDoc(userRef, {
-          name: result.user.displayName || "New User",
-          email: result.user.email,
-          role: "staff",
-        });
-      }
-      navigate("/dashboard");
-    } catch (err) {
-      setError("Google sign-in failed, try again");
-    }
-    setGoogleLoading(false);
-  };
 
-  return (
-    <AuthLayout>
-      <h1 className="font-display text-2xl font-semibold text-[var(--text)] mb-1">
-        Create your account
-      </h1>
-      <p className="text-[var(--text-dim)] text-sm mb-6">
-        Start tracking inventory in minutes
-      </p>
+import {
+  auth,
+  db
+} from "../../firebase";
 
-      {error && (
-        <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-3 py-2 rounded-lg mb-4">
-          {error}
-        </div>
-      )}
 
-      <button
-        onClick={handleGoogleSignIn}
-        disabled={googleLoading}
-        className="w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 text-[var(--text)] py-2.5 rounded-lg transition mb-5 disabled:opacity-50"
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.48c-.28 1.5-1.13 2.78-2.42 3.63v3h3.92c2.29-2.11 3.61-5.22 3.61-8.82z"/>
-          <path fill="#34A853" d="M12 24c3.27 0 6.01-1.08 8.01-2.93l-3.92-3c-1.08.73-2.47 1.16-4.09 1.16-3.14 0-5.8-2.12-6.75-4.97H1.2v3.1C3.19 21.3 7.28 24 12 24z"/>
-          <path fill="#FBBC05" d="M5.25 14.26c-.25-.73-.38-1.51-.38-2.26s.14-1.53.38-2.26v-3.1H1.2A11.96 11.96 0 0 0 0 12c0 1.93.46 3.76 1.2 5.36l4.05-3.1z"/>
-          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.45-3.45C18 1.19 15.27 0 12 0 7.28 0 3.19 2.7 1.2 6.64l4.05 3.1c.95-2.85 3.61-4.99 6.75-4.99z"/>
-        </svg>
-        <span className="text-sm font-medium">
-          {googleLoading ? "Signing in..." : "Continue with Google"}
-        </span>
-      </button>
+import {
+  motion
+} from "framer-motion";
 
-      <div className="flex items-center gap-3 mb-5">
-        <div className="h-px flex-1 bg-white/10" />
-        <span className="text-xs text-[var(--text-dim)] font-mono">OR</span>
-        <div className="h-px flex-1 bg-white/10" />
-      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-xs font-mono text-[var(--text-dim)] mb-1.5 tracking-wide">
-            FULL NAME
-          </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-[var(--text)] focus:outline-none focus:border-[var(--accent-2)] focus:ring-1 focus:ring-[var(--accent-2)] transition"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-mono text-[var(--text-dim)] mb-1.5 tracking-wide">
-            EMAIL
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-[var(--text)] focus:outline-none focus:border-[var(--accent-2)] focus:ring-1 focus:ring-[var(--accent-2)] transition"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-mono text-[var(--text-dim)] mb-1.5 tracking-wide">
-            PASSWORD
-          </label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-            className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-[var(--text)] focus:outline-none focus:border-[var(--accent-2)] focus:ring-1 focus:ring-[var(--accent-2)] transition"
-          />
-        </div>
-        <motion.button
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.98 }}
-          type="submit"
-          disabled={loading}
-          className="w-full bg-[var(--accent)] text-[#0B1220] font-semibold py-2.5 rounded-lg transition disabled:opacity-50"
-        >
-          {loading ? "Creating account..." : "Sign Up"}
-        </motion.button>
-      </form>
+import {
+  FiUser,
+  FiMail,
+  FiLock,
+  FiChrome,
+  FiArrowRight,
+  FiStar
+} from "react-icons/fi";
 
-      <p className="text-sm text-[var(--text-dim)] mt-6 text-center">
-        Already have an account?{" "}
-        <Link to="/" className="text-[var(--accent-2)] font-medium hover:underline">
-          Sign in
-        </Link>
-      </p>
-    </AuthLayout>
-  );
+
+import toast from "react-hot-toast";
+
+
+
+
+
+
+
+export default function Signup(){
+
+
+
+const navigate = useNavigate();
+
+
+
+const [name,setName] = useState("");
+
+const [email,setEmail] = useState("");
+
+const [password,setPassword] = useState("");
+
+const [loading,setLoading] = useState(false);
+
+const [googleLoading,setGoogleLoading] = useState(false);
+
+
+
+
+
+
+
+const signup = async(e)=>{
+
+
+e.preventDefault();
+
+
+setLoading(true);
+
+
+
+try{
+
+
+const userCredential =
+
+await createUserWithEmailAndPassword(
+
+auth,
+
+email,
+
+password
+
+);
+
+
+
+
+
+await setDoc(
+
+doc(
+
+db,
+
+"users",
+
+userCredential.user.uid
+
+),
+
+{
+
+name,
+
+email,
+
+role:"staff"
+
+}
+
+);
+
+
+
+
+toast.success(
+"Account created successfully"
+);
+
+
+
+navigate("/dashboard");
+
+
+
+}
+
+catch(error){
+
+
+toast.error(
+"Signup failed"
+);
+
+
+}
+
+
+
+setLoading(false);
+
+
+};
+
+
+
+
+
+
+
+
+
+const googleSignup = async()=>{
+
+
+try{
+
+
+setGoogleLoading(true);
+
+
+
+const provider =
+new GoogleAuthProvider();
+
+
+
+const result =
+
+await signInWithPopup(
+
+auth,
+
+provider
+
+);
+
+
+
+
+
+const userRef =
+
+doc(
+
+db,
+
+"users",
+
+result.user.uid
+
+);
+
+
+
+
+
+const userSnap =
+
+await getDoc(userRef);
+
+
+
+
+
+if(!userSnap.exists()){
+
+
+await setDoc(
+
+userRef,
+
+{
+
+name:
+result.user.displayName || "User",
+
+email:
+result.user.email,
+
+role:"staff"
+
+}
+
+);
+
+
+}
+
+
+
+
+toast.success(
+"Google signup successful"
+);
+
+
+
+navigate("/dashboard");
+
+
+
+}
+
+catch(error){
+
+
+toast.error(
+"Google signup failed"
+);
+
+
+}
+
+
+
+setGoogleLoading(false);
+
+
+};
+
+
+
+
+
+
+
+
+
+return(
+
+
+<div className="
+min-h-screen
+relative
+overflow-hidden
+flex
+items-center
+justify-center
+bg-[#020617]
+">
+
+
+
+
+
+
+{/* MOVING LIGHT BACKGROUND */}
+
+
+
+
+
+<motion.div
+
+animate={{
+
+x:[0,140,0],
+
+y:[0,-100,0]
+
+}}
+
+transition={{
+
+duration:18,
+
+repeat:Infinity
+
+}}
+
+className="
+absolute
+w-[650px]
+h-[650px]
+rounded-full
+bg-cyan-500/30
+blur-[170px]
+top-[-250px]
+left-[-250px]
+"
+
+/>
+
+
+
+
+
+
+
+<motion.div
+
+animate={{
+
+x:[0,-150,0],
+
+y:[0,120,0]
+
+}}
+
+transition={{
+
+duration:20,
+
+repeat:Infinity
+
+}}
+
+className="
+absolute
+w-[650px]
+h-[650px]
+rounded-full
+bg-purple-600/30
+blur-[170px]
+bottom-[-250px]
+right-[-250px]
+"
+
+/>
+
+
+
+
+
+
+
+{/* FLOATING STARS */}
+
+
+
+{
+[1,2,3,4,5,6,7,8].map((item)=>(
+
+
+<motion.div
+
+key={item}
+
+animate={{
+
+y:[0,-40,0],
+
+rotate:[0,180,360],
+
+opacity:[0.3,1,0.3]
+
+}}
+
+transition={{
+
+duration:5+item,
+
+repeat:Infinity
+
+}}
+
+style={{
+
+top:`${item*10}%`,
+
+left:`${item*9}%`
+
+}}
+
+className="
+absolute
+text-purple-300/40
+"
+
+
+>
+
+<FiStar/>
+
+
+</motion.div>
+
+
+))
+}
+
+
+
+
+
+
+
+{/* FLOATING GLASS SQUARES */}
+
+
+<motion.div
+
+animate={{
+
+y:[0,-80,0],
+
+rotate:[0,45,0]
+
+}}
+
+transition={{
+
+duration:10,
+
+repeat:Infinity
+
+}}
+
+className="
+absolute
+w-24
+h-24
+rounded-3xl
+bg-cyan-400/10
+border
+border-cyan-300/20
+backdrop-blur-xl
+top-20
+right-32
+"
+
+/>
+
+
+
+
+
+<motion.div
+
+animate={{
+
+y:[0,70,0],
+
+rotate:[0,-45,0]
+
+}}
+
+transition={{
+
+duration:12,
+
+repeat:Infinity
+
+}}
+
+className="
+absolute
+w-32
+h-32
+rounded-3xl
+bg-purple-500/10
+border
+border-purple-300/20
+backdrop-blur-xl
+bottom-20
+left-24
+"
+
+/>
+{/* SIGNUP GLASS CARD */}
+
+
+<motion.div
+
+initial={{
+opacity:0,
+y:60,
+scale:0.9
+}}
+
+animate={{
+opacity:1,
+y:0,
+scale:1
+}}
+
+transition={{
+duration:0.8,
+ease:"easeOut"
+}}
+
+
+whileHover={{
+scale:1.02
+}}
+
+
+className="
+relative
+z-10
+w-full
+max-w-md
+rounded-3xl
+p-8
+bg-white/10
+border
+border-white/20
+backdrop-blur-2xl
+shadow-2xl
+shadow-purple-500/20
+"
+
+>
+
+
+
+
+
+<motion.div
+
+animate={{
+
+scale:[1,1.2,1],
+
+opacity:[0.3,0.7,0.3]
+
+}}
+
+transition={{
+
+duration:5,
+
+repeat:Infinity
+
+}}
+
+className="
+absolute
+inset-0
+rounded-3xl
+bg-gradient-to-r
+from-cyan-500/20
+via-blue-500/20
+to-purple-500/20
+blur-xl
+"
+
+/>
+
+
+
+
+
+
+
+<div className="
+relative
+z-20
+">
+
+
+
+
+
+<h1 className="
+text-center
+text-5xl
+font-black
+bg-gradient-to-r
+from-cyan-400
+via-blue-500
+to-purple-500
+bg-clip-text
+text-transparent
+">
+
+Inventra
+
+</h1>
+
+
+
+
+<p className="
+text-center
+text-slate-300
+mt-3
+">
+
+Create your smart inventory account
+
+</p>
+
+
+
+
+
+
+
+
+{/* GOOGLE SIGNUP */}
+
+
+
+<motion.button
+
+whileHover={{
+scale:1.05
+}}
+
+whileTap={{
+scale:0.95
+}}
+
+onClick={googleSignup}
+
+disabled={googleLoading}
+
+className="
+mt-8
+w-full
+py-3
+rounded-xl
+bg-gradient-to-r
+from-cyan-500/20
+via-blue-500/20
+to-purple-500/20
+border
+border-cyan-400/30
+text-white
+font-bold
+flex
+items-center
+justify-center
+gap-3
+backdrop-blur-xl
+shadow-lg
+shadow-purple-500/20
+"
+
+>
+
+
+<FiChrome
+className="
+text-cyan-300
+text-xl
+"
+/>
+
+
+
+{
+
+googleLoading
+
+?
+
+"Connecting..."
+
+:
+
+"Continue with Google"
+
+}
+
+
+</motion.button>
+
+
+
+
+
+
+
+
+<div className="
+flex
+items-center
+gap-3
+my-6
+">
+
+
+<div className="
+h-px
+bg-white/20
+flex-1
+"/>
+
+
+<span className="
+text-xs
+text-slate-400
+">
+
+OR
+
+</span>
+
+
+<div className="
+h-px
+bg-white/20
+flex-1
+"/>
+
+
+</div>
+
+
+
+
+
+
+
+
+<form
+
+onSubmit={signup}
+
+className="
+space-y-5
+"
+
+>
+
+
+
+
+
+
+<Input
+
+icon={<FiUser/>}
+
+placeholder="Full Name"
+
+value={name}
+
+setValue={setName}
+
+/>
+
+
+
+
+
+
+<Input
+
+icon={<FiMail/>}
+
+placeholder="Email"
+
+value={email}
+
+setValue={setEmail}
+
+/>
+
+
+
+
+
+
+<Input
+
+icon={<FiLock/>}
+
+placeholder="Password"
+
+type="password"
+
+value={password}
+
+setValue={setPassword}
+
+/>
+
+
+
+
+
+
+
+
+
+<motion.button
+
+whileHover={{
+scale:1.04
+}}
+
+whileTap={{
+scale:0.95
+}}
+
+disabled={loading}
+
+className="
+w-full
+py-4
+rounded-xl
+bg-gradient-to-r
+from-cyan-500
+via-blue-600
+to-purple-600
+font-bold
+flex
+items-center
+justify-center
+gap-3
+shadow-xl
+shadow-cyan-500/30
+"
+
+>
+
+
+{
+
+loading
+
+?
+
+"Creating Account..."
+
+:
+
+"Create Account"
+
+}
+
+
+
+<FiArrowRight/>
+
+
+</motion.button>
+
+
+
+
+
+
+</form>
+
+
+
+
+
+
+
+
+
+<p className="
+text-center
+text-slate-300
+mt-7
+text-sm
+">
+
+Already have an account?
+
+
+<Link
+
+to="/login"
+
+className="
+text-cyan-400
+font-bold
+ml-2
+hover:underline
+"
+
+>
+
+Login
+
+</Link>
+
+
+</p>
+
+
+
+
+
+
+
+</div>
+
+
+
+
+
+</motion.div>
+
+
+
+
+
+
+</div>
+
+
+);
+
+
+}
+
+
+
+
+
+
+
+
+function Input({
+
+icon,
+
+placeholder,
+
+value,
+
+setValue,
+
+type="text"
+
+}){
+
+
+return(
+
+
+<div className="
+flex
+items-center
+gap-3
+bg-black/30
+border
+border-white/10
+rounded-xl
+px-4
+focus-within:border-cyan-400
+transition
+">
+
+
+<span className="
+text-cyan-400
+text-xl
+">
+
+{icon}
+
+</span>
+
+
+
+
+<input
+
+type={type}
+
+placeholder={placeholder}
+
+value={value}
+
+onChange={(e)=>setValue(e.target.value)}
+
+className="
+w-full
+py-3
+bg-transparent
+outline-none
+text-white
+placeholder:text-slate-400
+"
+
+/>
+
+
+
+</div>
+
+
+)
+
 }

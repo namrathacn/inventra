@@ -1,5 +1,4 @@
 ﻿import {
-  FiSearch,
   FiPlus,
   FiPackage,
   FiAlertTriangle,
@@ -8,15 +7,28 @@
   FiX
 } from "react-icons/fi";
 
-import { useState } from "react";
+
+import {
+  useState,
+  useEffect
+} from "react";
+
 
 import { motion } from "framer-motion";
 
+
 import DashboardLayout from "../../layouts/DashboardLayout";
+
 
 import { useCurrency } from "../../context/CurrencyContext";
 
+
 import { useSearch } from "../../context/SearchContext";
+
+
+import { useData } from "../../context/DataContext";
+
+
 
 
 
@@ -25,7 +37,9 @@ export default function Products(){
 
 
 const {
+
 currencySymbol,
+
 convertAmount
 
 }=useCurrency();
@@ -33,8 +47,12 @@ convertAmount
 
 
 
+
 const {
-search
+
+search,
+
+addSearchItems
 
 }=useSearch();
 
@@ -42,41 +60,54 @@ search
 
 
 
+const {
+
+products,
+
+setProducts
+
+}=useData();
 
 
-const [products,setProducts]=useState([
 
 
 
-{
-id:1,
-name:"MacBook Pro",
-category:"Laptop",
-price:120000,
-stock:25
-},
 
 
-{
-id:2,
-name:"Gaming Keyboard",
-category:"Accessories",
-price:8500,
-stock:8
-},
+
+useEffect(()=>{
 
 
-{
-id:3,
-name:"4K Monitor",
-category:"Display",
-price:32000,
-stock:14
+if(products && products.length){
+
+
+addSearchItems(
+
+products.map(product=>({
+
+
+name:product.name,
+
+
+type:"Product",
+
+
+path:"/products"
+
+
+
+}))
+
+
+);
+
+
 }
 
 
+},[products]);
 
-]);
+
 
 
 
@@ -85,7 +116,6 @@ stock:14
 
 
 const [showModal,setShowModal]=useState(false);
-
 
 
 const [editProduct,setEditProduct]=useState(null);
@@ -98,11 +128,15 @@ const [editProduct,setEditProduct]=useState(null);
 const [form,setForm]=useState({
 
 name:"",
+
 category:"",
+
 price:"",
+
 stock:""
 
 });
+
 
 
 
@@ -121,8 +155,11 @@ setEditProduct(null);
 setForm({
 
 name:"",
+
 category:"",
+
 price:"",
+
 stock:""
 
 });
@@ -151,7 +188,6 @@ setForm(product);
 
 
 setShowModal(true);
-
 
 
 }
@@ -189,7 +225,10 @@ return;
 
 
 
+
+
 if(editProduct){
+
 
 
 setProducts(
@@ -218,7 +257,6 @@ item
 
 )
 
-
 );
 
 
@@ -243,7 +281,6 @@ stock:Number(form.stock)
 
 }
 
-
 ]);
 
 
@@ -251,12 +288,13 @@ stock:Number(form.stock)
 
 
 
-
-
 setShowModal(false);
 
 
 }
+
+
+
 
 
 
@@ -289,9 +327,9 @@ item=>item.id!==id
 
 
 
-const filteredProducts =
 
-products.filter(product=>
+const filteredProducts = products.filter(product=>
+
 
 product.name
 
@@ -302,11 +340,14 @@ product.name
 
 
 ||
+
 product.category
 
 .toLowerCase()
 
 .includes(search.toLowerCase())
+
+
 
 );
 
@@ -325,8 +366,6 @@ return(
 
 
 <div className="space-y-8">
-
-
 
 
 
@@ -359,6 +398,7 @@ Products
 </h1>
 
 
+
 <p className="
 text-slate-400
 ">
@@ -369,6 +409,7 @@ Manage your inventory
 
 
 </div>
+
 
 
 
@@ -388,16 +429,14 @@ items-center
 gap-2
 "
 
-
 >
-
 
 <FiPlus/>
 
 Add Product
 
-
 </button>
+
 
 
 </div>
@@ -421,17 +460,23 @@ gap-6
 
 {
 
+
 filteredProducts.map(product=>(
+
 
 
 <motion.div
 
 
+
 key={product.id}
 
 
+
 whileHover={{
+
 scale:1.03
+
 }}
 
 
@@ -446,8 +491,9 @@ p-6
 "
 
 
-
 >
+
+
 
 
 
@@ -480,10 +526,9 @@ text-2xl
 
 
 
-
 {
 
-product.stock<10 &&
+product.stock < 10 &&
 
 
 <FiAlertTriangle
@@ -499,9 +544,7 @@ text-xl
 }
 
 
-
 </div>
-
 
 
 
@@ -525,6 +568,8 @@ mt-5
 
 
 
+
+
 <p className="
 text-slate-400
 ">
@@ -539,10 +584,13 @@ text-slate-400
 
 
 
+
+
 <div className="mt-5 space-y-2">
 
 
 <p className="text-white">
+
 
 Price:
 
@@ -552,18 +600,22 @@ Price:
 
 {convertAmount(product.price)}
 
+
 </p>
+
 
 
 
 
 <p className="text-white">
 
+
 Stock:
 
 {" "}
 
 {product.stock}
+
 
 </p>
 
@@ -587,9 +639,11 @@ mt-6
 ">
 
 
+
 <span className={
 
-product.stock<10
+
+product.stock < 10
 
 ?
 
@@ -599,12 +653,13 @@ product.stock<10
 
 "bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm"
 
+
 }>
 
 
 {
 
-product.stock<10
+product.stock < 10
 
 ?
 
@@ -614,8 +669,8 @@ product.stock<10
 
 "Available"
 
-}
 
+}
 
 
 </span>
@@ -638,17 +693,14 @@ gap-4
 
 onClick={()=>openEdit(product)}
 
-className="
-text-cyan-400
-"
+className="text-cyan-400"
 
 >
 
-
 <FiEdit2/>
 
-
 </button>
+
 
 
 
@@ -657,33 +709,30 @@ text-cyan-400
 
 onClick={()=>deleteProduct(product.id)}
 
-className="
-text-red-400
-"
-
+className="text-red-400"
 
 >
 
-
 <FiTrash2/>
-
 
 </button>
 
 
 
-
 </div>
 
 
 
 </div>
+
+
 
 
 
 
 
 </motion.div>
+
 
 
 ))
@@ -693,261 +742,11 @@ text-red-400
 
 
 
-
 </div>
 
 
 
 
-
-
-
-
-
-{
-
-
-showModal &&
-
-
-<div className="
-fixed
-inset-0
-bg-black/60
-flex
-items-center
-justify-center
-z-50
-">
-
-
-
-<form
-
-onSubmit={saveProduct}
-
-className="
-bg-slate-900
-border
-border-white/10
-rounded-3xl
-p-6
-w-full
-max-w-md
-space-y-4
-"
-
-
->
-
-
-
-<div className="
-flex
-justify-between
-">
-
-
-<h2 className="
-text-white
-text-xl
-font-bold
-">
-
-{
-
-editProduct
-
-?
-
-"Edit Product"
-
-:
-
-"Add Product"
-
-}
-
-</h2>
-
-
-
-<button
-
-type="button"
-
-onClick={()=>setShowModal(false)}
-
-className="text-white"
-
->
-
-
-<FiX/>
-
-
-</button>
-
-
-</div>
-
-
-
-
-
-
-
-<input
-
-placeholder="Product name"
-
-value={form.name}
-
-onChange={(e)=>setForm({
-
-...form,
-
-name:e.target.value
-
-})}
-
-
-className="
-w-full
-bg-white/10
-p-3
-rounded-xl
-text-white
-"
-
-/>
-
-
-
-
-
-
-<input
-
-placeholder="Category"
-
-value={form.category}
-
-onChange={(e)=>setForm({
-
-...form,
-
-category:e.target.value
-
-})}
-
-
-className="
-w-full
-bg-white/10
-p-3
-rounded-xl
-text-white
-"
-
-/>
-
-
-
-
-
-
-<input
-
-placeholder="Price"
-
-value={form.price}
-
-onChange={(e)=>setForm({
-
-...form,
-
-price:e.target.value
-
-})}
-
-
-className="
-w-full
-bg-white/10
-p-3
-rounded-xl
-text-white
-"
-
-/>
-
-
-
-
-
-
-<input
-
-placeholder="Stock"
-
-value={form.stock}
-
-onChange={(e)=>setForm({
-
-...form,
-
-stock:e.target.value
-
-})}
-
-
-className="
-w-full
-bg-white/10
-p-3
-rounded-xl
-text-white
-"
-
-/>
-
-
-
-
-
-
-
-<button
-
-className="
-w-full
-bg-cyan-500
-py-3
-rounded-xl
-text-white
-font-semibold
-"
-
->
-
-Save Product
-
-</button>
-
-
-
-
-
-
-</form>
-
-
-
-</div>
-
-
-}
 
 
 

@@ -22,23 +22,21 @@ import { useCurrency } from "../../context/CurrencyContext";
 import { useSearch } from "../../context/SearchContext";
 
 
-export default function Dashboard(){
+export default function Dashboard() {
 
 
 const {
-formatCurrency
-}=useCurrency();
-
+  formatCurrency
+} = useCurrency();
 
 
 const {
-search
-}=useSearch();
+  search
+} = useSearch();
 
 
 
-
-const orders=[
+const orders = [
 
 {
 id:"#1024",
@@ -72,7 +70,6 @@ status:"Completed"
 
 
 
-
 const filteredOrders = orders.filter((order)=>
 
 order.product
@@ -85,9 +82,7 @@ search.toLowerCase()
 
 
 
-
-
-return(
+return (
 
 <DashboardLayout>
 
@@ -96,14 +91,17 @@ return(
 
 
 
-{/* CARDS */}
+{/* STAT CARDS */}
 
 
-<div className="
+<div
+className="
 grid
 gap-6
 lg:grid-cols-4
-">
+"
+>
+
 
 
 <StatCard
@@ -144,7 +142,6 @@ iconColor="text-blue-400"
 
 
 
-
 <StatCard
 
 title="Products"
@@ -160,7 +157,6 @@ iconBackground="bg-purple-500/20"
 iconColor="text-purple-400"
 
 />
-
 
 
 
@@ -187,19 +183,20 @@ iconColor="text-red-400"
 
 
 
-<RevenueChart/>
+<RevenueChart />
 
 
 
 
 
 
-
-<div className="
+<div
+className="
 grid
 gap-6
 lg:grid-cols-2
-">
+"
+>
 
 
 
@@ -224,7 +221,6 @@ p-6
 backdrop-blur-xl
 "
 
-
 >
 
 
@@ -239,6 +235,7 @@ Sales Overview
 </h2>
 
 
+
 <p className="
 text-sm
 text-slate-400
@@ -248,6 +245,7 @@ mt-1
 Monthly performance
 
 </p>
+
 
 
 
@@ -278,6 +276,7 @@ text-sm
 text-slate-300
 ">
 
+
 <span>
 {item[0]}
 </span>
@@ -300,6 +299,7 @@ mt-2
 ">
 
 
+
 <div
 
 className="
@@ -311,12 +311,11 @@ to-cyan-400
 "
 
 style={{
-
 width:`${item[1]}%`
-
 }}
 
 />
+
 
 
 </div>
@@ -330,6 +329,7 @@ width:`${item[1]}%`
 
 
 }
+
 
 
 </div>
@@ -379,12 +379,14 @@ Current stock overview
 
 
 
+
 <div className="
 grid
 grid-cols-3
 gap-4
 mt-8
 ">
+
 
 
 <div className="
@@ -394,11 +396,16 @@ p-5
 text-center
 ">
 
-<FiBox className="
+
+<FiBox
+
+className="
 mx-auto
 text-3xl
 text-green-400
-"/>
+"
+
+/>
 
 
 <h3 className="
@@ -424,9 +431,6 @@ Available
 
 
 </div>
-
-
-
 <div className="
 rounded-2xl
 bg-yellow-500/10
@@ -434,11 +438,16 @@ p-5
 text-center
 ">
 
-<FiAlertTriangle className="
+
+<FiAlertTriangle
+
+className="
 mx-auto
 text-3xl
 text-yellow-400
-"/>
+"
+
+/>
 
 
 <h3 className="
@@ -467,6 +476,8 @@ Low
 
 
 
+
+
 <div className="
 rounded-2xl
 bg-red-500/10
@@ -475,11 +486,15 @@ text-center
 ">
 
 
-<FiBox className="
+<FiBox
+
+className="
 mx-auto
 text-3xl
 text-red-400
-"/>
+"
+
+/>
 
 
 <h3 className="
@@ -507,14 +522,22 @@ Out
 </div>
 
 
+
 </div>
+
 
 
 </motion.div>
 
 
 </div>
-// SALES TREND + TOP PRODUCTS
+
+
+
+
+
+{/* SALES TREND + TOP PRODUCTS */}
+
 
 <div className="
 grid
@@ -522,11 +545,15 @@ gap-6
 lg:grid-cols-2
 ">
 
-<SalesTrend/>
 
-<TopProducts/>
+<SalesTrend />
+
+
+<TopProducts />
+
 
 </div>
+
 
 
 
@@ -560,6 +587,7 @@ backdrop-blur-xl
 >
 
 
+
 <div className="
 flex
 items-center
@@ -567,7 +595,9 @@ justify-between
 ">
 
 
+
 <div>
+
 
 <h2 className="
 text-xl
@@ -595,6 +625,7 @@ Latest customer transactions
 
 
 
+
 <button
 
 className="
@@ -610,7 +641,10 @@ View all
 </button>
 
 
+
 </div>
+
+
 
 
 
@@ -661,6 +695,7 @@ text-white
 </h3>
 
 
+
 <p className="
 text-sm
 text-slate-400
@@ -668,7 +703,7 @@ text-slate-400
 
 {order.id}
 
-•
+{" • "}
 
 {formatCurrency(order.price)}
 
@@ -676,6 +711,7 @@ text-slate-400
 
 
 </div>
+
 
 
 
@@ -690,21 +726,29 @@ gap-2
 
 {
 
-order.status==="Completed"
+order.status === "Completed"
 
 ?
 
-<FiCheckCircle className="
+<FiCheckCircle
+
+className="
 text-green-400
 text-xl
-"/>
+"
+
+/>
 
 :
 
-<FiClock className="
+<FiClock
+
+className="
 text-yellow-400
 text-xl
-"/>
+"
+
+/>
 
 }
 
@@ -719,13 +763,12 @@ text-slate-300
 </span>
 
 
-
 </div>
 
 
 
-</div>
 
+</div>
 
 
 ))
@@ -754,16 +797,7 @@ No orders found
 
 
 </motion.div>
-
-
-
-
-
-
-
-
 {/* AI INVENTORY INSIGHTS */}
-
 
 
 <motion.div
@@ -830,9 +864,7 @@ Smart business analysis and predictions
 </p>
 
 
-
 </div>
-
 
 
 
@@ -843,10 +875,16 @@ bg-purple-500/20
 p-3
 ">
 
-<FiTrendingUp className="
+
+<FiTrendingUp
+
+className="
 text-purple-400
 text-2xl
-"/>
+"
+
+/>
+
 
 </div>
 
@@ -865,6 +903,7 @@ gap-5
 mt-6
 md:grid-cols-4
 ">
+
 
 
 
@@ -890,6 +929,7 @@ Profit Analysis
 
 
 
+
 <h4 className="
 text-3xl
 font-bold
@@ -900,6 +940,7 @@ mt-3
 {formatCurrency(482000)}
 
 </h4>
+
 
 
 
@@ -916,6 +957,7 @@ mt-2
 
 
 </div>
+
 
 
 
@@ -945,6 +987,7 @@ Loss Detection
 
 
 
+
 <h4 className="
 text-3xl
 font-bold
@@ -955,6 +998,7 @@ mt-3
 {formatCurrency(38500)}
 
 </h4>
+
 
 
 
@@ -971,6 +1015,8 @@ Low selling products affecting revenue
 
 
 </div>
+
+
 
 
 
@@ -1012,6 +1058,7 @@ mt-3
 
 
 
+
 <p className="
 text-sm
 text-slate-300
@@ -1025,6 +1072,7 @@ Items inactive for 30 days
 
 
 </div>
+
 
 
 
@@ -1054,6 +1102,7 @@ Demand Forecast
 
 
 
+
 <h4 className="
 text-3xl
 font-bold
@@ -1064,6 +1113,7 @@ mt-3
 +18%
 
 </h4>
+
 
 
 
@@ -1089,7 +1139,9 @@ Expected sales increase
 
 
 
+
 </motion.div>
+
 
 
 

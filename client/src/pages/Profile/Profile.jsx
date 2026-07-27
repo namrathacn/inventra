@@ -6,446 +6,555 @@
   FiPackage,
   FiShoppingCart,
   FiBarChart,
-  FiEdit
+  FiActivity,
+  FiCheckCircle
 } from "react-icons/fi";
+
 
 import { motion } from "framer-motion";
 
+
 import DashboardLayout from "../../layouts/DashboardLayout";
+
 
 import { useAuth } from "../../context/AuthContext";
 
 
 
-export default function Profile() {
 
 
-  const { user } = useAuth();
+export default function Profile(){
 
 
 
-  const username =
-    user?.displayName ||
-    user?.email?.split("@")[0] ||
-    "Inventra User";
+const { user } = useAuth();
 
 
 
-  return (
 
+const username =
+user?.displayName ||
+user?.email?.split("@")[0] ||
+"Inventra User";
 
-    <DashboardLayout>
 
 
-      <div className="space-y-8">
 
 
+return(
 
-        {/* PROFILE HEADER */}
 
+<DashboardLayout>
 
-        <motion.div
 
-          initial={{opacity:0,y:20}}
 
-          animate={{opacity:1,y:0}}
+<div className="space-y-8">
 
-          className="
-          rounded-3xl
-          border
-          border-white/10
-          bg-white/5
-          backdrop-blur-xl
-          p-8
-          "
 
-        >
 
 
-          <div className="
-          flex
-          flex-col
-          md:flex-row
-          items-center
-          gap-6
-          ">
 
 
 
-            {
+{/* PROFILE HEADER */}
 
-              user?.photoURL ?
 
 
-              <img
+<motion.div
 
-                src={user.photoURL}
+initial={{
+opacity:0,
+y:30
+}}
 
-                alt="Profile"
+animate={{
+opacity:1,
+y:0
+}}
 
-                className="
-                h-28
-                w-28
-                rounded-full
-                object-cover
-                border
-                border-white/20
-                "
+transition={{
+duration:.5
+}}
 
-              />
+className="
+relative
+overflow-hidden
+rounded-3xl
+border
+border-white/10
+bg-white/5
+backdrop-blur-xl
+p-8
+"
 
 
-              :
+>
 
 
-              <div className="
-              h-28
-              w-28
-              rounded-full
-              bg-gradient-to-br
-              from-cyan-400
-              to-blue-600
-              flex
-              items-center
-              justify-center
-              ">
+<div className="
+absolute
+right-0
+top-0
+h-48
+w-48
+rounded-full
+bg-cyan-500/20
+blur-3xl
+"
+/>
 
 
-                <FiUser className="
-                text-5xl
-                text-white
-                "/>
 
+<div className="
+flex
+flex-col
+md:flex-row
+items-center
+gap-8
+relative
+">
 
-              </div>
 
 
-            }
 
 
 
 
+{/* AVATAR */}
 
-            <div>
 
 
-              <h1 className="
-              text-3xl
-              font-bold
-              text-white
-              ">
+<div className="
+h-32
+w-32
+rounded-full
+bg-gradient-to-br
+from-cyan-400
+to-blue-600
+p-1
+">
 
-                {username}
 
-              </h1>
+<div className="
+h-full
+w-full
+rounded-full
+bg-[#07111f]
+flex
+items-center
+justify-center
+overflow-hidden
+">
 
 
+{
 
-              <p className="
-              text-slate-400
-              mt-2
-              ">
+user?.photoURL ?
 
-                {user?.email}
 
-              </p>
+<img
 
+src={user.photoURL}
 
+alt="Profile"
 
-              <span className="
-              inline-block
-              mt-4
-              rounded-full
-              bg-green-500/20
-              px-4
-              py-2
-              text-sm
-              text-green-400
-              ">
+className="
+h-full
+w-full
+object-cover
+"
 
-                Active Account
+/>
 
-              </span>
 
+:
 
-            </div>
 
+<FiUser
 
+className="
+text-6xl
+text-cyan-400
+"
 
+/>
 
 
-            <button className="
-            md:ml-auto
-            flex
-            items-center
-            gap-2
-            rounded-xl
-            bg-cyan-500
-            px-5
-            py-3
-            text-white
-            hover:bg-cyan-400
-            transition
-            ">
+}
 
-              <FiEdit/>
 
-              Edit Profile
 
+</div>
 
-            </button>
 
+</div>
 
 
 
-          </div>
 
 
 
-        </motion.div>
 
 
 
+<div className="flex-1">
 
 
+<h1 className="
+text-4xl
+font-bold
+text-white
+">
 
+{username}
 
-        {/* DETAILS */}
+</h1>
 
 
 
-        <div className="
-        grid
-        md:grid-cols-2
-        gap-6
-        ">
 
+<p className="
+text-slate-400
+mt-3
+flex
+items-center
+gap-2
+">
 
 
+<FiMail/>
 
-          <div className="
-          rounded-3xl
-          border
-          border-white/10
-          bg-white/5
-          backdrop-blur-xl
-          p-6
-          ">
 
+{user?.email || "No email"}
 
-            <h2 className="
-            text-xl
-            font-bold
-            text-white
-            mb-6
-            ">
 
-              Personal Details
+</p>
 
-            </h2>
 
 
 
 
+<div className="
+flex
+gap-3
+mt-5
+">
 
-            <div className="space-y-6">
 
+<span className="
+flex
+items-center
+gap-2
+rounded-full
+bg-green-500/20
+px-4
+py-2
+text-green-400
+text-sm
+">
 
+<FiCheckCircle/>
 
-              <Info
+Active Account
 
-              icon={<FiMail/>}
+</span>
 
-              title="Email"
 
-              value={user?.email}
 
-              />
 
+<span className="
+rounded-full
+bg-cyan-500/20
+px-4
+py-2
+text-cyan-400
+text-sm
+">
 
+Administrator
 
-              <Info
+</span>
 
-              icon={<FiShield/>}
 
-              title="Authentication"
 
-              value="Firebase Verified"
+</div>
 
-              />
 
 
+</div>
 
-              <Info
 
-              icon={<FiCalendar/>}
 
-              title="Joined"
 
-              value={
-                user?.metadata?.creationTime || 
-                "Recently"
-              }
 
-              />
 
 
+</div>
 
 
-            </div>
+</motion.div>
 
 
 
-          </div>
 
 
 
 
 
 
+{/* DETAILS */}
 
 
 
-          <div className="
-          rounded-3xl
-          border
-          border-white/10
-          bg-white/5
-          backdrop-blur-xl
-          p-6
-          ">
+<div className="
+grid
+md:grid-cols-3
+gap-6
+">
 
 
 
-            <h2 className="
-            text-xl
-            font-bold
-            text-white
-            mb-6
-            ">
 
-              Account Status
 
-            </h2>
+<InfoCard
 
+icon={<FiMail/>}
 
+title="Email"
 
+value={user?.email || "Not Available"}
 
-            <div className="
-            rounded-2xl
-            bg-green-500/10
-            p-5
-            ">
+/>
 
 
-              <h3 className="
-              text-green-400
-              font-semibold
-              ">
 
-                Verified User
 
-              </h3>
 
+<InfoCard
 
+icon={<FiShield/>}
 
-              <p className="
-              text-slate-300
-              text-sm
-              mt-2
-              ">
+title="Security"
 
-                Your Inventra account is active and secure.
+value="Firebase Verified"
 
-              </p>
+/>
 
 
-            </div>
 
 
 
+<InfoCard
 
-          </div>
+icon={<FiCalendar/>}
 
+title="Joined"
 
+value={
+user?.metadata?.creationTime ||
+"Recently"
+}
 
+/>
 
 
-        </div>
 
 
 
+</div>
 
 
 
 
 
-        {/* STAT CARDS */}
 
 
 
-        <div className="
-        grid
-        md:grid-cols-3
-        gap-6
-        ">
 
+{/* STATISTICS */}
 
 
 
-          <StatCard
+<div className="
+grid
+md:grid-cols-3
+gap-6
+">
 
-          icon={<FiPackage/>}
 
-          title="Products"
 
-          value="421"
+<StatCard
 
-          />
+icon={<FiPackage/>}
 
+title="Products Managed"
 
+value="421"
 
+/>
 
-          <StatCard
 
-          icon={<FiShoppingCart/>}
 
-          title="Orders"
 
-          value="267"
 
-          />
+<StatCard
 
+icon={<FiShoppingCart/>}
 
+title="Orders Completed"
 
+value="267"
 
-          <StatCard
+/>
 
-          icon={<FiBarChart/>}
 
-          title="Reports"
 
-          value="18"
 
-          />
 
+<StatCard
 
+icon={<FiBarChart/>}
 
+title="Reports Generated"
 
-        </div>
+value="18"
 
+/>
 
 
 
 
-      </div>
 
+</div>
 
 
-    </DashboardLayout>
 
 
-  );
+
+
+
+
+
+{/* ACTIVITY */}
+
+
+
+<motion.div
+
+initial={{
+opacity:0
+}}
+
+animate={{
+opacity:1
+}}
+
+className="
+rounded-3xl
+border
+border-white/10
+bg-white/5
+backdrop-blur-xl
+p-8
+"
+
+>
+
+
+<div className="
+flex
+items-center
+gap-3
+mb-6
+">
+
+
+<FiActivity
+
+className="
+text-cyan-400
+text-3xl
+"
+
+/>
+
+
+<h2 className="
+text-2xl
+font-bold
+text-white
+">
+
+Account Activity
+
+</h2>
+
+
+</div>
+
+
+
+
+
+
+<div className="
+grid
+md:grid-cols-3
+gap-5
+">
+
+
+
+<ActivityCard
+
+title="Login"
+
+value="Active Now"
+
+/>
+
+
+
+<ActivityCard
+
+title="Account"
+
+value="Secure"
+
+/>
+
+
+
+<ActivityCard
+
+title="Role"
+
+value="Admin"
+
+/>
+
+
+
+</div>
+
+
+
+</motion.div>
+
+
+
+
+
+
+
+
+</div>
+
+
+</DashboardLayout>
+
+
+)
 
 }
 
@@ -455,21 +564,36 @@ export default function Profile() {
 
 
 
-function Info({icon,title,value}){
 
 
-return (
+function InfoCard({icon,title,value}){
 
-<div className="
-flex
-items-center
-gap-4
-">
+
+return(
+
+
+<motion.div
+
+whileHover={{
+y:-5
+}}
+
+className="
+rounded-3xl
+border
+border-white/10
+bg-white/5
+backdrop-blur-xl
+p-6
+"
+
+
+>
 
 
 <div className="
 text-cyan-400
-text-xl
+text-3xl
 ">
 
 {icon}
@@ -477,11 +601,10 @@ text-xl
 </div>
 
 
-<div>
 
 <p className="
-text-sm
 text-slate-400
+mt-4
 ">
 
 {title}
@@ -489,24 +612,26 @@ text-slate-400
 </p>
 
 
-<p className="
+
+<h3 className="
 text-white
+font-bold
+mt-2
+truncate
 ">
 
 {value}
 
-</p>
+</h3>
 
 
-</div>
+</motion.div>
 
 
-</div>
-
-);
-
+)
 
 }
+
 
 
 
@@ -520,21 +645,31 @@ function StatCard({icon,title,value}){
 
 return(
 
-<div className="
+
+<motion.div
+
+whileHover={{
+scale:1.03
+}}
+
+className="
 rounded-3xl
 border
 border-white/10
-bg-white/5
+bg-gradient-to-br
+from-white/10
+to-white/5
 backdrop-blur-xl
 p-6
-hover:bg-white/10
-transition
-">
+"
+
+
+>
 
 
 <div className="
-text-3xl
 text-cyan-400
+text-4xl
 ">
 
 {icon}
@@ -542,31 +677,86 @@ text-cyan-400
 </div>
 
 
-<h3 className="
+
+<p className="
 text-slate-400
 mt-4
 ">
 
 {title}
 
-</h3>
+</p>
 
 
-<p className="
-text-3xl
-font-bold
+
+<h2 className="
 text-white
+text-4xl
+font-bold
 mt-2
 ">
 
 {value}
 
+</h2>
+
+
+
+</motion.div>
+
+
+)
+
+}
+
+
+
+
+
+
+
+
+
+function ActivityCard({title,value}){
+
+
+return(
+
+
+<div className="
+rounded-2xl
+bg-black/20
+border
+border-white/10
+p-5
+">
+
+
+<p className="
+text-slate-400
+">
+
+{title}
+
 </p>
+
+
+<h3 className="
+text-white
+font-bold
+text-xl
+mt-2
+">
+
+{value}
+
+</h3>
 
 
 </div>
 
-);
+
+)
 
 
 }

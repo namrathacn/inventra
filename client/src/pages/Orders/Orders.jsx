@@ -9,15 +9,28 @@
   FiX
 } from "react-icons/fi";
 
-import { useState } from "react";
+
+import {
+  useState,
+  useEffect
+} from "react";
+
 
 import { motion } from "framer-motion";
 
+
 import DashboardLayout from "../../layouts/DashboardLayout";
+
 
 import { useCurrency } from "../../context/CurrencyContext";
 
+
 import { useSearch } from "../../context/SearchContext";
+
+
+import { useData } from "../../context/DataContext";
+
+
 
 
 
@@ -34,8 +47,10 @@ convertAmount
 
 
 
+
 const {
-search
+search,
+addSearchItems
 
 }=useSearch();
 
@@ -43,40 +58,44 @@ search
 
 
 
+const {
+orders,
+setOrders
+
+}=useData();
 
 
-const [orders,setOrders]=useState([
 
 
 
-{
-id:1,
-customer:"Rahul Sharma",
-product:"MacBook Pro",
-amount:120000,
-status:"Completed"
-},
+useEffect(()=>{
 
 
-{
-id:2,
-customer:"Ananya Rao",
-product:"Gaming Keyboard",
-amount:8500,
-status:"Pending"
-},
+if(orders && orders.length){
 
 
-{
-id:3,
-customer:"Kiran Kumar",
-product:"4K Monitor",
-amount:32000,
-status:"Cancelled"
+addSearchItems(
+
+orders.map(order=>({
+
+name:order.customer,
+
+type:"Order",
+
+path:"/orders"
+
+
+}))
+
+);
+
+
 }
 
 
-]);
+},[orders]);
+
+
 
 
 
@@ -85,7 +104,6 @@ status:"Cancelled"
 
 
 const [showModal,setShowModal]=useState(false);
-
 
 
 const [editOrder,setEditOrder]=useState(null);
@@ -103,7 +121,6 @@ amount:"",
 status:"Pending"
 
 });
-
 
 
 
@@ -140,6 +157,7 @@ setShowModal(true);
 
 
 
+
 function openEdit(order){
 
 
@@ -153,6 +171,7 @@ setShowModal(true);
 
 
 }
+
 
 
 
@@ -176,6 +195,7 @@ if(
 )
 
 return;
+
 
 
 
@@ -208,9 +228,7 @@ item
 
 )
 
-
 );
-
 
 
 }
@@ -252,6 +270,7 @@ setShowModal(false);
 
 
 
+
 function deleteOrder(id){
 
 
@@ -276,9 +295,10 @@ item=>item.id!==id
 
 
 
-const filteredOrders =
 
-orders.filter(order=>
+const filteredOrders = orders.filter(order=>
+
+
 
 order.customer
 
@@ -296,8 +316,9 @@ order.product
 
 .includes(search.toLowerCase())
 
-);
 
+
+);
 
 
 
@@ -313,8 +334,6 @@ return(
 
 
 <div className="space-y-8">
-
-
 
 
 
@@ -347,6 +366,7 @@ Orders
 </h1>
 
 
+
 <p className="
 text-slate-400
 ">
@@ -357,6 +377,7 @@ Manage customer orders
 
 
 </div>
+
 
 
 
@@ -376,16 +397,14 @@ items-center
 gap-2
 "
 
-
 >
-
 
 <FiPlus/>
 
 Add Order
 
-
 </button>
+
 
 
 </div>
@@ -401,10 +420,10 @@ Add Order
 <div className="space-y-5">
 
 
-
 {
 
 filteredOrders.map(order=>(
+
 
 
 <motion.div
@@ -414,9 +433,10 @@ key={order.id}
 
 
 whileHover={{
-scale:1.02
-}}
 
+scale:1.02
+
+}}
 
 
 className="
@@ -429,7 +449,6 @@ p-6
 "
 
 
-
 >
 
 
@@ -439,7 +458,6 @@ justify-between
 items-center
 gap-5
 ">
-
 
 
 
@@ -458,7 +476,6 @@ p-4
 rounded-xl
 ">
 
-
 <FiShoppingCart
 
 className="
@@ -468,10 +485,7 @@ text-2xl
 
 />
 
-
 </div>
-
-
 
 
 
@@ -511,7 +525,11 @@ mt-2
 
 {currencySymbol}
 
-{convertAmount(order.amount)}
+{Math.round(
+
+convertAmount(order.amount)
+
+).toLocaleString()}
 
 
 </p>
@@ -530,7 +548,6 @@ mt-2
 
 
 
-
 <div className="
 flex
 items-center
@@ -539,11 +556,7 @@ gap-4
 
 
 
-
-
-
 <span className={
-
 
 order.status==="Completed"
 
@@ -562,7 +575,6 @@ order.status==="Pending"
 :
 
 "flex items-center gap-2 bg-red-500/20 text-red-400 px-4 py-2 rounded-full"
-
 
 }>
 
@@ -587,9 +599,7 @@ order.status==="Pending"
 
 <FiXCircle/>
 
-
 }
-
 
 
 {order.status}
@@ -601,20 +611,15 @@ order.status==="Pending"
 
 
 
-
-
 <button
 
 onClick={()=>openEdit(order)}
 
-className="
-text-cyan-400
-"
+className="text-cyan-400"
 
 >
 
 <FiEdit2/>
-
 
 </button>
 
@@ -626,31 +631,21 @@ text-cyan-400
 
 onClick={()=>deleteOrder(order.id)}
 
-className="
-text-red-400
-"
+className="text-red-400"
 
 >
 
-
 <FiTrash2/>
-
 
 </button>
 
 
-
-
-
-
-
 </div>
 
 
 
 
 </div>
-
 
 
 </motion.div>
@@ -670,283 +665,6 @@ text-red-400
 
 
 
-
-
-
-{
-
-
-showModal &&
-
-
-<div className="
-fixed
-inset-0
-bg-black/60
-flex
-items-center
-justify-center
-z-50
-">
-
-
-
-<form
-
-onSubmit={saveOrder}
-
-className="
-bg-slate-900
-border
-border-white/10
-rounded-3xl
-p-6
-w-full
-max-w-md
-space-y-4
-"
-
-
->
-
-
-
-<div className="
-flex
-justify-between
-">
-
-
-<h2 className="
-text-white
-text-xl
-font-bold
-">
-
-{
-
-editOrder
-
-?
-
-"Edit Order"
-
-:
-
-"Add Order"
-
-}
-
-</h2>
-
-
-
-<button
-
-type="button"
-
-onClick={()=>setShowModal(false)}
-
-className="text-white"
-
->
-
-
-<FiX/>
-
-
-</button>
-
-
-</div>
-
-
-
-
-
-
-
-<input
-
-placeholder="Customer name"
-
-value={form.customer}
-
-onChange={(e)=>setForm({
-
-...form,
-
-customer:e.target.value
-
-})}
-
-
-className="
-w-full
-bg-white/10
-p-3
-rounded-xl
-text-white
-"
-
-/>
-
-
-
-
-
-
-
-<input
-
-placeholder="Product"
-
-value={form.product}
-
-onChange={(e)=>setForm({
-
-...form,
-
-product:e.target.value
-
-})}
-
-
-className="
-w-full
-bg-white/10
-p-3
-rounded-xl
-text-white
-"
-
-/>
-
-
-
-
-
-
-
-
-<input
-
-placeholder="Amount"
-
-value={form.amount}
-
-onChange={(e)=>setForm({
-
-...form,
-
-amount:e.target.value
-
-})}
-
-
-className="
-w-full
-bg-white/10
-p-3
-rounded-xl
-text-white
-"
-
-/>
-
-
-
-
-
-
-
-
-<select
-
-
-value={form.status}
-
-
-onChange={(e)=>setForm({
-
-...form,
-
-status:e.target.value
-
-})}
-
-
-className="
-w-full
-bg-slate-800
-p-3
-rounded-xl
-text-white
-"
-
-
->
-
-
-<option>
-Pending
-</option>
-
-
-<option>
-Completed
-</option>
-
-
-<option>
-Cancelled
-</option>
-
-
-</select>
-
-
-
-
-
-
-
-
-<button
-
-className="
-w-full
-bg-cyan-500
-py-3
-rounded-xl
-text-white
-font-semibold
-"
-
->
-
-Save Order
-
-</button>
-
-
-
-
-
-
-</form>
-
-
-
-</div>
-
-
-}
-
-
-
-
-
 </div>
 
 
@@ -954,6 +672,5 @@ Save Order
 
 
 )
-
 
 }
