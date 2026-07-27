@@ -12,8 +12,27 @@ import {
 } from "react-icons/fi";
 
 import { motion } from "framer-motion";
+import {
+  FaReact,
+  FaNodeJs,
+} from "react-icons/fa";
+import {
+  SiVite,
+  SiTailwindcss,
+  SiFirebase,
+  SiExpress,
+  SiMongodb,
+  SiFramer,
+} from "react-icons/si";
 import { useNavigate } from "react-router-dom";
-
+import DashboardPreview from "./DashboardPreview";
+import WhyChoose from "./WhyChoose";
+import TechStack from "./TechStack";
+import HowItWorks from "./HowItWorks";
+import WhoItsFor from "./WhoItsFor";
+import Testimonials from "./Testimonials";
+import FAQ from "./FAQ";
+import Footer from "./Footer";
 
 const fadeUp = {
   hidden:{
@@ -1194,7 +1213,9 @@ font-black
 
 
 
-
+<DashboardPreview />
+<WhyChoose />
+<TechStack />
 {/* FEATURES SECTION */}
 
 
@@ -1365,6 +1386,7 @@ text="Generate business insights."
 
 
 </section>
+<HowItWorks />
 {/* TECHNOLOGY SECTION */}
 
 
@@ -1653,6 +1675,7 @@ value="Firebase"
 
 
 </section>
+<WhoItsFor />
 
 
 
@@ -1661,7 +1684,11 @@ value="Firebase"
 
 
 
+<Testimonials />
 
+
+
+<FAQ />
 {/* FINAL CTA */}
 
 
@@ -1775,17 +1802,7 @@ Get Started
 
 
 
-<footer className="
-border-t
-border-white/10
-py-8
-text-center
-text-slate-400
-">
-
-© 2026 Inventra Smart Inventory Management System
-
-</footer>
+<Footer />
 
 
 
