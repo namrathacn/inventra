@@ -817,33 +817,3 @@ box-shadow:
 
 
 }
-.light{
-
-background:#f8fafc;
-
-color:#0f172a;
-
-}
-
-
-.light .bg-white\/5{
-
-background:rgba(0,0,0,0.05);
-
-}
-
-
-
-.light .text-white{
-
-color:#0f172a;
-
-}
-
-
-
-.light .text-slate-400{
-
-color:#64748b;
-
-}
