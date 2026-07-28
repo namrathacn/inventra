@@ -26,8 +26,8 @@ import { useAuth } from "../../context/AuthContext";
 export default function Profile(){
 
 
-
 const { user } = useAuth();
+
 
 
 
@@ -47,9 +47,7 @@ return(
 <DashboardLayout>
 
 
-
 <div className="space-y-8">
-
 
 
 
@@ -87,11 +85,12 @@ backdrop-blur-xl
 p-8
 "
 
-
 >
 
 
-<div className="
+<div
+
+className="
 absolute
 right-0
 top-0
@@ -101,7 +100,10 @@ rounded-full
 bg-cyan-500/20
 blur-3xl
 "
+
 />
+
+
 
 
 
@@ -120,11 +122,13 @@ relative
 
 
 
-{/* AVATAR */}
+{/* PROFILE IMAGE */}
 
 
 
-<div className="
+<div
+
+className="
 h-32
 w-32
 rounded-full
@@ -132,10 +136,14 @@ bg-gradient-to-br
 from-cyan-400
 to-blue-600
 p-1
-">
+"
+
+>
 
 
-<div className="
+<div
+
+className="
 h-full
 w-full
 rounded-full
@@ -144,10 +152,13 @@ flex
 items-center
 justify-center
 overflow-hidden
-">
+"
+
+>
 
 
 {
+
 
 user?.photoURL ?
 
@@ -156,7 +167,7 @@ user?.photoURL ?
 
 src={user.photoURL}
 
-alt="Profile"
+alt="Google Profile"
 
 className="
 h-full
@@ -170,17 +181,29 @@ object-cover
 :
 
 
-<FiUser
+<div
 
 className="
-text-6xl
+text-5xl
+font-bold
 text-cyan-400
 "
 
-/>
+>
+
+
+{
+
+username.charAt(0).toUpperCase()
+
+}
+
+
+</div>
 
 
 }
+
 
 
 
@@ -200,32 +223,48 @@ text-cyan-400
 <div className="flex-1">
 
 
-<h1 className="
+<h1
+
+className="
 text-4xl
 font-bold
 text-white
-">
+"
+
+>
+
 
 {username}
+
 
 </h1>
 
 
 
 
-<p className="
+
+
+<p
+
+className="
 text-slate-400
 mt-3
 flex
 items-center
 gap-2
-">
+"
+
+>
 
 
 <FiMail/>
 
 
-{user?.email || "No email"}
+{
+
+user?.email || "No email"
+
+}
 
 
 </p>
@@ -234,14 +273,24 @@ gap-2
 
 
 
-<div className="
+
+
+
+<div
+
+className="
 flex
 gap-3
 mt-5
-">
+flex-wrap
+"
+
+>
 
 
-<span className="
+<span
+
+className="
 flex
 items-center
 gap-2
@@ -251,33 +300,60 @@ px-4
 py-2
 text-green-400
 text-sm
-">
+"
+
+>
+
 
 <FiCheckCircle/>
 
+
 Active Account
+
 
 </span>
 
 
 
 
-<span className="
+
+<span
+
+className="
 rounded-full
 bg-cyan-500/20
 px-4
 py-2
 text-cyan-400
 text-sm
-">
+"
 
-Administrator
+>
+
+
+{
+
+user?.providerData?.[0]?.providerId === "google.com"
+
+?
+
+"Google Account"
+
+:
+
+"Firebase Account"
+
+}
+
 
 </span>
 
 
 
+
 </div>
+
+
 
 
 
@@ -306,12 +382,15 @@ Administrator
 
 
 
-<div className="
+<div
+
+className="
 grid
 md:grid-cols-3
 gap-6
-">
+"
 
+>
 
 
 
@@ -334,9 +413,15 @@ value={user?.email || "Not Available"}
 
 icon={<FiShield/>}
 
-title="Security"
+title="Authentication"
 
-value="Firebase Verified"
+value={
+user?.providerData?.[0]?.providerId === "google.com"
+?
+"Google Verified"
+:
+"Firebase Verified"
+}
 
 />
 
@@ -375,11 +460,15 @@ user?.metadata?.creationTime ||
 
 
 
-<div className="
+<div
+
+className="
 grid
 md:grid-cols-3
 gap-6
-">
+"
+
+>
 
 
 
@@ -425,6 +514,7 @@ value="18"
 
 
 
+
 </div>
 
 
@@ -441,13 +531,16 @@ value="18"
 
 <motion.div
 
+
 initial={{
 opacity:0
 }}
 
+
 animate={{
 opacity:1
 }}
+
 
 className="
 rounded-3xl
@@ -461,12 +554,17 @@ p-8
 >
 
 
-<div className="
+
+<div
+
+className="
 flex
 items-center
 gap-3
 mb-6
-">
+"
+
+>
 
 
 <FiActivity
@@ -479,15 +577,23 @@ text-3xl
 />
 
 
-<h2 className="
+
+<h2
+
+className="
 text-2xl
 font-bold
 text-white
-">
+"
+
+>
+
 
 Account Activity
 
+
 </h2>
+
 
 
 </div>
@@ -497,11 +603,17 @@ Account Activity
 
 
 
-<div className="
+
+
+<div
+
+className="
 grid
 md:grid-cols-3
 gap-5
-">
+"
+
+>
 
 
 
@@ -515,6 +627,7 @@ value="Active Now"
 
 
 
+
 <ActivityCard
 
 title="Account"
@@ -525,11 +638,18 @@ value="Secure"
 
 
 
+
 <ActivityCard
 
-title="Role"
+title="Profile"
 
-value="Admin"
+value={
+user?.photoURL
+?
+"Google Photo"
+:
+"Default Avatar"
+}
 
 />
 
@@ -539,9 +659,8 @@ value="Admin"
 
 
 
+
 </motion.div>
-
-
 
 
 
@@ -555,6 +674,7 @@ value="Admin"
 
 
 )
+
 
 }
 
@@ -587,48 +707,73 @@ backdrop-blur-xl
 p-6
 "
 
+>
+
+
+
+<div
+
+className="
+text-cyan-400
+text-3xl
+"
 
 >
 
 
-<div className="
-text-cyan-400
-text-3xl
-">
-
 {icon}
+
 
 </div>
 
 
 
-<p className="
+
+<p
+
+className="
 text-slate-400
 mt-4
-">
+"
+
+>
+
 
 {title}
+
 
 </p>
 
 
 
-<h3 className="
+
+
+<h3
+
+className="
 text-white
 font-bold
 mt-2
 truncate
-">
+"
+
+>
+
 
 {value}
 
+
 </h3>
+
+
+
 
 
 </motion.div>
 
 
 )
+
 
 }
 
@@ -648,9 +793,11 @@ return(
 
 <motion.div
 
+
 whileHover={{
 scale:1.03
 }}
+
 
 className="
 rounded-3xl
@@ -663,42 +810,66 @@ backdrop-blur-xl
 p-6
 "
 
+>
+
+
+
+<div
+
+className="
+text-cyan-400
+text-4xl
+"
 
 >
 
 
-<div className="
-text-cyan-400
-text-4xl
-">
-
 {icon}
+
 
 </div>
 
 
 
-<p className="
+
+
+<p
+
+className="
 text-slate-400
 mt-4
-">
+"
+
+>
+
 
 {title}
+
 
 </p>
 
 
 
-<h2 className="
+
+
+<h2
+
+className="
 text-white
 text-4xl
 font-bold
 mt-2
-">
+"
+
+>
+
 
 {value}
 
+
 </h2>
+
+
 
 
 
@@ -706,6 +877,7 @@ mt-2
 
 
 )
+
 
 }
 
@@ -723,34 +895,56 @@ function ActivityCard({title,value}){
 return(
 
 
-<div className="
+<div
+
+className="
 rounded-2xl
 bg-black/20
 border
 border-white/10
 p-5
-">
+"
+
+>
 
 
-<p className="
+
+<p
+
+className="
 text-slate-400
-">
+"
+
+>
+
 
 {title}
+
 
 </p>
 
 
-<h3 className="
+
+
+<h3
+
+className="
 text-white
 font-bold
 text-xl
 mt-2
-">
+"
+
+>
+
 
 {value}
 
+
 </h3>
+
+
+
 
 
 </div>

@@ -8,12 +8,15 @@ import {
 
 import {
   onAuthStateChanged,
-  updateProfile
+  updateProfile,
+  signInWithPopup,
+  signOut
 } from "firebase/auth";
 
 
 import {
-  auth
+  auth,
+  googleProvider
 } from "../firebase";
 
 
@@ -22,12 +25,14 @@ const AuthContext = createContext();
 
 
 
+
 export function AuthProvider({children}){
 
 
-const [user,setUser]=useState(null);
+const [user,setUser] = useState(null);
 
-const [loading,setLoading]=useState(true);
+const [loading,setLoading] = useState(true);
+
 
 
 
@@ -35,7 +40,8 @@ const [loading,setLoading]=useState(true);
 useEffect(()=>{
 
 
-const unsubscribe = onAuthStateChanged(
+const unsubscribe =
+onAuthStateChanged(
 auth,
 (currentUser)=>{
 
@@ -45,9 +51,7 @@ setUser(currentUser);
 setLoading(false);
 
 
-}
-
-);
+});
 
 
 return unsubscribe;
@@ -61,6 +65,97 @@ return unsubscribe;
 
 
 
+// GOOGLE LOGIN
+
+const googleLogin = async()=>{
+
+
+try{
+
+
+const result =
+await signInWithPopup(
+auth,
+googleProvider
+);
+
+
+
+const user =
+result.user;
+
+
+
+setUser(user);
+
+
+
+return user;
+
+
+
+}
+
+catch(error){
+
+
+console.log(
+"Google Login Error:",
+error
+);
+
+
+throw error;
+
+
+}
+
+
+};
+
+
+
+
+
+
+
+
+
+// LOGOUT
+
+const logout = async()=>{
+
+
+try{
+
+
+await signOut(auth);
+
+setUser(null);
+
+
+}
+
+catch(error){
+
+
+console.log(error);
+
+
+}
+
+
+};
+
+
+
+
+
+
+
+
+
+// UPDATE PROFILE
 
 const updateUser = async(newData)=>{
 
@@ -78,24 +173,21 @@ newData
 
 
 
-const updatedUser = {
+setUser({
 
 ...auth.currentUser,
 
-displayName:newData.displayName
+...newData
 
-};
-
-
-
-setUser(updatedUser);
+});
 
 
 }
 
 
+}
 
-}catch(error){
+catch(error){
 
 
 throw error;
@@ -104,8 +196,10 @@ throw error;
 }
 
 
-
 };
+
+
+
 
 
 
@@ -114,7 +208,9 @@ throw error;
 
 return(
 
+
 <AuthContext.Provider
+
 
 value={{
 
@@ -122,9 +218,15 @@ user,
 
 loading,
 
+googleLogin,
+
+logout,
+
 updateUser
 
 }}
+
+
 
 >
 
@@ -135,15 +237,21 @@ updateUser
 </AuthContext.Provider>
 
 
-)
+);
+
 
 }
 
 
 
 
+
+
+
 export function useAuth(){
 
+
 return useContext(AuthContext);
+
 
 }

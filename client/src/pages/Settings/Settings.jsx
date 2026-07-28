@@ -1,78 +1,144 @@
-﻿import DashboardLayout from "../../layouts/DashboardLayout";
-
-import {
-  FiBell,
-  FiUser,
-  FiDatabase,
-  FiCpu,
-  FiShield,
-  FiSettings
-} from "react-icons/fi";
-
+﻿import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
+import DashboardLayout from "../../layouts/DashboardLayout";
 
-const cards = [
 
-{
-title:"Business Profile",
-desc:"Update store details, contact information and business preferences.",
-icon:FiUser,
-color:"from-cyan-500 to-blue-500"
-},
-
-{
-title:"Appearance",
-desc:"Customize dashboard appearance and experience.",
-icon:FiSettings,
-color:"from-purple-500 to-pink-500"
-},
-
-{
-title:"Notifications",
-desc:"Manage stock alerts, reports and inventory reminders.",
-icon:FiBell,
-color:"from-green-500 to-emerald-500"
-},
-
-{
-title:"Inventra AI",
-desc:"Enable smart stock predictions and inventory suggestions.",
-icon:FiCpu,
-color:"from-blue-500 to-indigo-500"
-},
-
-{
-title:"Data Management",
-desc:"Backup, export and manage inventory data.",
-icon:FiDatabase,
-color:"from-orange-500 to-yellow-500"
-},
-
-{
-title:"Security",
-desc:"Manage password and account security settings.",
-icon:FiShield,
-color:"from-red-500 to-rose-500"
-}
-
-];
+import {
+  FiUser,
+  FiBell,
+  FiCpu,
+  FiDatabase,
+  FiShield,
+  FiArrowRight
+} from "react-icons/fi";
 
 
 
 export default function Settings(){
 
 
+const navigate = useNavigate();
+
+
+
+const settings=[
+
+
+{
+title:"Business Profile",
+description:"Manage company details, business information and workspace preferences.",
+icon:<FiUser/>,
+path:"/profile",
+gradient:"from-cyan-400 to-blue-600"
+},
+
+
+{
+title:"Notifications",
+description:"Control alerts, reports and inventory reminders.",
+icon:<FiBell/>,
+path:"/notifications",
+gradient:"from-emerald-400 to-green-600"
+},
+
+
+{
+title:"Inventra AI",
+description:"Enable intelligent forecasting and inventory insights.",
+icon:<FiCpu/>,
+path:"/ai",
+gradient:"from-purple-500 to-indigo-600"
+},
+
+
+{
+title:"Database",
+description:"Manage storage, backups and inventory records.",
+icon:<FiDatabase/>,
+path:"/database",
+gradient:"from-orange-400 to-yellow-500"
+},
+
+
+{
+title:"Security",
+description:"Protect your account and manage access permissions.",
+icon:<FiShield/>,
+path:"/security",
+gradient:"from-red-500 to-pink-600"
+}
+
+
+
+];
+
+
+
+
+
 return(
+
 
 <DashboardLayout>
 
 
-<div className="space-y-8">
+<div className="
+relative
+min-h-screen
+overflow-hidden
+bg-transparent
+">
 
 
 
-{/* HEADER */}
+
+
+{/* Neon Background Blur */}
+
+
+<div className="
+absolute
+top-10
+left-10
+w-80
+h-80
+rounded-full
+bg-cyan-500/10
+blur-[120px]
+"
+/>
+
+
+
+<div className="
+absolute
+bottom-10
+right-10
+w-96
+h-96
+rounded-full
+bg-purple-500/10
+blur-[120px]
+"
+/>
+
+
+
+
+
+
+
+<div className="
+relative
+space-y-10
+">
+
+
+
+
+
+
 
 <motion.div
 
@@ -90,37 +156,27 @@ transition={{
 duration:0.5
 }}
 
-className="
-rounded-3xl
-bg-white/5
-border
-border-white/10
-p-8
-backdrop-blur-xl
-shadow-2xl
-"
-
 >
 
 
-<h1
-className="
-text-3xl
-font-bold
+<h1 className="
+text-4xl
+font-black
 text-white
-"
->
+">
+
 Settings
+
 </h1>
 
 
-<p
-className="
-mt-2
-text-slate-400
-"
->
-Manage your Inventra preferences and system controls
+<p className="
+mt-3
+text-gray-400
+">
+
+Manage your Inventra workspace, AI tools, database and security.
+
 </p>
 
 
@@ -130,36 +186,263 @@ Manage your Inventra preferences and system controls
 
 
 
-{/* CARDS */}
 
 
-<div
-className="
+
+
+<div className="
 grid
-gap-6
 md:grid-cols-2
-"
->
+xl:grid-cols-3
+gap-7
+">
+
+
+
 
 
 {
-cards.map((item,index)=>{
 
+settings.map((item,index)=>(
 
-const Icon=item.icon;
-
-
-return(
 
 
 <motion.div
+
 
 key={item.title}
 
 
 initial={{
+
 opacity:0,
+
 y:40
+
+}}
+
+
+animate={{
+
+opacity:1,
+
+y:0
+
+}}
+
+
+
+transition={{
+
+delay:index*0.12,
+
+duration:0.5
+
+}}
+
+
+
+whileHover={{
+
+y:-8,
+
+scale:1.02
+
+}}
+
+
+
+onClick={()=>navigate(item.path)}
+
+
+
+
+className="
+group
+cursor-pointer
+relative
+rounded-3xl
+overflow-hidden
+"
+
+>
+
+
+
+{/* Glow Border */}
+
+<div className={`
+absolute
+inset-0
+rounded-3xl
+bg-gradient-to-br
+${item.gradient}
+opacity-20
+blur-xl
+group-hover:opacity-50
+transition
+duration-500
+`}
+/>
+
+
+
+
+
+
+{/* Glass Card */}
+
+<div className="
+relative
+rounded-3xl
+bg-[#0b1220]/80
+backdrop-blur-2xl
+border
+border-white/10
+p-7
+shadow-xl
+hover:border-cyan-400/40
+transition
+duration-300
+">
+
+
+
+
+
+
+
+<div className={`
+w-16
+h-16
+rounded-2xl
+bg-gradient-to-br
+${item.gradient}
+flex
+items-center
+justify-center
+text-white
+text-3xl
+mb-6
+shadow-lg
+group-hover:rotate-6
+transition
+duration-300
+`}>
+
+{item.icon}
+
+</div>
+
+
+
+
+
+
+
+
+<h2 className="
+text-2xl
+font-bold
+text-white
+">
+
+
+{item.title}
+
+
+</h2>
+
+
+
+
+
+
+
+<p className="
+text-gray-400
+mt-3
+leading-relaxed
+">
+
+
+{item.description}
+
+
+</p>
+
+
+
+
+
+
+
+<div className="
+mt-7
+flex
+items-center
+gap-3
+text-cyan-400
+font-semibold
+">
+
+
+Open Settings
+
+
+<FiArrowRight
+
+className="
+group-hover:translate-x-2
+transition
+"
+
+/>
+
+
+</div>
+
+
+
+
+
+
+
+</div>
+
+
+
+
+
+</motion.div>
+
+
+
+))
+
+
+}
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<motion.div
+
+
+initial={{
+opacity:0,
+y:30
 }}
 
 
@@ -170,134 +453,83 @@ y:0
 
 
 transition={{
-delay:index*0.08,
-duration:0.45
+delay:0.8
 }}
 
-
-whileHover={{
-y:-8,
-scale:1.02
-}}
 
 
 className="
-group
-relative
-overflow-hidden
 rounded-3xl
+bg-[#0b1220]/70
+backdrop-blur-2xl
 border
-border-white/10
-bg-white/5
-p-6
-backdrop-blur-xl
+border-cyan-400/20
+p-8
 shadow-xl
-transition
 "
 
-
 >
 
 
-{/* Glow */}
 
-
-<div
-
-className={`
-absolute
--right-10
--top-10
-h-32
-w-32
-rounded-full
-bg-gradient-to-br
-${item.color}
-opacity-20
-blur-3xl
-group-hover:opacity-50
-transition
-`}
-
-/>
-
-
-
-<div className="relative z-10">
-
-
-<div
-
-className={`
-flex
-h-14
-w-14
-items-center
-justify-center
-rounded-2xl
-bg-gradient-to-br
-${item.color}
-shadow-lg
-mb-5
-`}
-
->
-
-<Icon
-className="
+<h2 className="
 text-2xl
-text-white
-"
-/>
-
-
-</div>
-
-
-
-
-<h2
-className="
-text-xl
 font-bold
 text-white
-"
->
+">
 
-{item.title}
+
+Inventra Workspace
+
 
 </h2>
 
 
 
 
-<p
-className="
+<p className="
+text-gray-400
 mt-2
-text-slate-400
-leading-relaxed
-"
->
+">
 
-{item.desc}
+
+Everything you need to manage your inventory system from one place.
+
 
 </p>
 
+
+
+
+
+<div className="
+inline-flex
+mt-5
+px-5
+py-2
+rounded-full
+bg-cyan-500/10
+border
+border-cyan-400/30
+text-cyan-300
+">
+
+
+System Ready ✓
 
 
 </div>
 
 
 
+
+
 </motion.div>
 
 
-)
 
 
-})
 
-}
 
 
 </div>
@@ -311,5 +543,6 @@ leading-relaxed
 
 
 )
+
 
 }

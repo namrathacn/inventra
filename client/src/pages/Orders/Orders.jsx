@@ -37,13 +37,10 @@ import { useData } from "../../context/DataContext";
 export default function Orders(){
 
 
-
 const {
 currencySymbol,
 convertAmount
-
 }=useCurrency();
-
 
 
 
@@ -51,9 +48,7 @@ convertAmount
 const {
 search,
 addSearchItems
-
 }=useSearch();
-
 
 
 
@@ -61,8 +56,9 @@ addSearchItems
 const {
 orders,
 setOrders
-
 }=useData();
+
+
 
 
 
@@ -71,7 +67,7 @@ setOrders
 useEffect(()=>{
 
 
-if(orders && orders.length){
+if(orders?.length){
 
 
 addSearchItems(
@@ -83,7 +79,6 @@ name:order.customer,
 type:"Order",
 
 path:"/orders"
-
 
 }))
 
@@ -101,8 +96,6 @@ path:"/orders"
 
 
 
-
-
 const [showModal,setShowModal]=useState(false);
 
 
@@ -111,16 +104,18 @@ const [editOrder,setEditOrder]=useState(null);
 
 
 
-
-
 const [form,setForm]=useState({
 
 customer:"",
+
 product:"",
+
 amount:"",
+
 status:"Pending"
 
 });
+
 
 
 
@@ -138,8 +133,11 @@ setEditOrder(null);
 setForm({
 
 customer:"",
+
 product:"",
+
 amount:"",
+
 status:"Pending"
 
 });
@@ -149,7 +147,6 @@ setShowModal(true);
 
 
 }
-
 
 
 
@@ -179,8 +176,6 @@ setShowModal(true);
 
 
 
-
-
 function saveOrder(e){
 
 
@@ -195,6 +190,8 @@ if(
 )
 
 return;
+
+
 
 
 
@@ -229,6 +226,7 @@ item
 )
 
 );
+
 
 
 }
@@ -270,7 +268,6 @@ setShowModal(false);
 
 
 
-
 function deleteOrder(id){
 
 
@@ -295,9 +292,8 @@ item=>item.id!==id
 
 
 
-
-const filteredOrders = orders.filter(order=>
-
+const filteredOrders =
+orders.filter(order=>
 
 
 order.customer
@@ -305,7 +301,6 @@ order.customer
 .toLowerCase()
 
 .includes(search.toLowerCase())
-
 
 
 ||
@@ -317,8 +312,8 @@ order.product
 .includes(search.toLowerCase())
 
 
-
 );
+
 
 
 
@@ -334,6 +329,7 @@ return(
 
 
 <div className="space-y-8">
+
 
 
 
@@ -388,6 +384,7 @@ onClick={openAdd}
 
 className="
 bg-cyan-500
+hover:bg-cyan-400
 text-white
 px-5
 py-3
@@ -395,15 +392,19 @@ rounded-xl
 flex
 items-center
 gap-2
+transition
 "
 
 >
+
 
 <FiPlus/>
 
 Add Order
 
+
 </button>
+
 
 
 
@@ -418,6 +419,7 @@ Add Order
 
 
 <div className="space-y-5">
+
 
 
 {
@@ -463,6 +465,7 @@ gap-5
 
 
 
+
 <div className="
 flex
 items-center
@@ -476,6 +479,7 @@ p-4
 rounded-xl
 ">
 
+
 <FiShoppingCart
 
 className="
@@ -485,7 +489,10 @@ text-2xl
 
 />
 
+
 </div>
+
+
 
 
 
@@ -506,6 +513,7 @@ text-white
 
 
 
+
 <p className="
 text-slate-400
 ">
@@ -513,6 +521,7 @@ text-slate-400
 {order.product}
 
 </p>
+
 
 
 
@@ -535,7 +544,6 @@ convertAmount(order.amount)
 </p>
 
 
-
 </div>
 
 
@@ -556,7 +564,9 @@ gap-4
 
 
 
-<span className={
+<span
+
+className={
 
 order.status==="Completed"
 
@@ -576,7 +586,9 @@ order.status==="Pending"
 
 "flex items-center gap-2 bg-red-500/20 text-red-400 px-4 py-2 rounded-full"
 
-}>
+}
+
+>
 
 
 {
@@ -611,11 +623,15 @@ order.status==="Pending"
 
 
 
+
+
 <button
 
 onClick={()=>openEdit(order)}
 
-className="text-cyan-400"
+className="
+text-cyan-400
+"
 
 >
 
@@ -627,17 +643,23 @@ className="text-cyan-400"
 
 
 
+
+
 <button
 
 onClick={()=>deleteOrder(order.id)}
 
-className="text-red-400"
+className="
+text-red-400
+"
 
 >
 
 <FiTrash2/>
 
 </button>
+
+
 
 
 </div>
@@ -665,6 +687,355 @@ className="text-red-400"
 
 
 
+
+
+
+{/* ORDER MODAL */}
+
+
+
+{
+
+showModal &&
+
+
+<div className="
+fixed
+inset-0
+z-50
+flex
+items-center
+justify-center
+bg-black/60
+backdrop-blur-sm
+">
+
+
+
+<div className="
+w-full
+max-w-md
+rounded-3xl
+border
+border-white/10
+bg-[#07111f]
+p-8
+shadow-2xl
+">
+
+
+
+
+
+<div className="
+flex
+justify-between
+items-center
+mb-6
+">
+
+
+<h2 className="
+text-2xl
+font-bold
+text-white
+">
+
+
+{
+
+editOrder
+?
+"Edit Order"
+:
+"Add Order"
+
+}
+
+
+</h2>
+
+
+
+
+
+<button
+
+onClick={()=>setShowModal(false)}
+
+className="
+text-slate-400
+hover:text-white
+"
+
+>
+
+
+<FiX size={24}/>
+
+
+</button>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<form
+
+onSubmit={saveOrder}
+
+className="
+space-y-4
+"
+
+>
+
+
+
+<input
+
+placeholder="Customer Name"
+
+value={form.customer}
+
+onChange={
+e=>setForm({
+...form,
+customer:e.target.value
+})
+}
+
+className="
+w-full
+rounded-xl
+bg-white/10
+border
+border-white/10
+p-3
+text-white
+outline-none
+"
+
+/>
+
+
+
+
+
+
+
+<input
+
+placeholder="Product Name"
+
+value={form.product}
+
+onChange={
+e=>setForm({
+...form,
+product:e.target.value
+})
+}
+
+className="
+w-full
+rounded-xl
+bg-white/10
+border
+border-white/10
+p-3
+text-white
+outline-none
+"
+
+/>
+
+
+
+
+
+
+
+<input
+
+placeholder="Amount"
+
+type="number"
+
+value={form.amount}
+
+onChange={
+e=>setForm({
+...form,
+amount:e.target.value
+})
+}
+
+className="
+w-full
+rounded-xl
+bg-white/10
+border
+border-white/10
+p-3
+text-white
+outline-none
+"
+
+/>
+
+
+
+
+
+
+
+
+<div className="relative">
+
+
+<select
+
+value={form.status}
+
+onChange={
+e=>setForm({
+...form,
+status:e.target.value
+})
+}
+
+className="
+appearance-none
+w-full
+rounded-xl
+bg-white/10
+border
+border-white/20
+p-3
+text-white
+outline-none
+backdrop-blur-xl
+cursor-pointer
+"
+
+>
+
+
+<option
+value="Pending"
+className="bg-[#07111f] text-white"
+>
+Pending
+</option>
+
+
+<option
+value="Completed"
+className="bg-[#07111f] text-white"
+>
+Completed
+</option>
+
+
+<option
+value="Cancelled"
+className="bg-[#07111f] text-white"
+>
+Cancelled
+</option>
+
+
+</select>
+
+
+
+<div
+
+className="
+absolute
+right-4
+top-1/2
+-translate-y-1/2
+pointer-events-none
+text-slate-300
+"
+
+>
+
+⌄
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+<button
+
+className="
+w-full
+rounded-xl
+bg-gradient-to-r
+from-cyan-500
+to-blue-600
+py-3
+font-semibold
+text-white
+"
+
+>
+
+
+{
+
+editOrder
+?
+"Update Order"
+:
+"Save Order"
+
+}
+
+
+</button>
+
+
+
+
+
+</form>
+
+
+
+
+
+</div>
+
+
+</div>
+
+
+}
+
+
+
+
+
+
+
 </div>
 
 
@@ -672,5 +1043,6 @@ className="text-red-400"
 
 
 )
+
 
 }

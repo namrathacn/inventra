@@ -26,6 +26,14 @@ import Reports from "./pages/Reports/Reports";
 import Staff from "./pages/Staff/Staff";
 
 
+// New Settings Pages
+
+import Notifications from "./pages/Notifications/Notifications";
+import InventraAI from "./pages/InventraAI/InventraAI";
+import Database from "./pages/Database/Database";
+import Security from "./pages/Security/Security";
+
+
 
 
 export default function App(){
@@ -42,80 +50,175 @@ return(
 <DataProvider>
 
 
+
 <Toaster
+
 position="top-right"
+
 />
+
 
 
 <Routes>
 
 
 
+
 <Route
+
 path="/"
+
 element={<Home/>}
+
 />
 
 
+
 <Route
+
 path="/login"
+
 element={<Login/>}
+
 />
 
 
+
 <Route
+
 path="/signup"
+
 element={<Signup/>}
+
 />
 
 
 
+
+
 <Route
+
 path="/dashboard"
+
 element={<Dashboard/>}
+
 />
 
 
 
+
 <Route
+
 path="/products"
+
 element={<Products/>}
+
 />
 
 
 
+
 <Route
+
 path="/orders"
+
 element={<Orders/>}
+
 />
 
 
 
+
 <Route
+
 path="/settings"
+
 element={<Settings/>}
+
 />
 
 
 
+
 <Route
+
 path="/profile"
+
 element={<Profile/>}
+
 />
 
 
 
+
 <Route
+
 path="/reports"
+
 element={<Reports/>}
+
 />
+
 
 
 
 <Route
+
 path="/staff"
+
 element={<Staff/>}
+
 />
+
+
+
+
+
+{/* Settings Feature Pages */}
+
+
+
+<Route
+
+path="/notifications"
+
+element={<Notifications/>}
+
+/>
+
+
+
+
+<Route
+
+path="/ai"
+
+element={<InventraAI/>}
+
+/>
+
+
+
+
+<Route
+
+path="/database"
+
+element={<Database/>}
+
+/>
+
+
+
+
+<Route
+
+path="/security"
+
+element={<Security/>}
+
+/>
+
 
 
 
@@ -127,7 +230,9 @@ path="*"
 
 element={
 
-<div className="
+<div
+
+className="
 min-h-screen
 flex
 items-center
@@ -136,7 +241,9 @@ bg-[#020617]
 text-white
 text-4xl
 font-black
-">
+"
+
+>
 
 Page Not Found
 
@@ -147,7 +254,10 @@ Page Not Found
 />
 
 
+
 </Routes>
+
+
 
 
 </DataProvider>
