@@ -10,7 +10,7 @@ import { DataProvider } from "./context/DataContext";
 
 
 
-import Home from "./pages/Home/Home";
+import Home from "./pages/home/Home";
 
 import Login from "./pages/Login/Login";
 import Signup from "./pages/Signup/Signup";
