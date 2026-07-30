@@ -1,798 +1,345 @@
-import {
-  FiPlus,
-  FiShoppingCart,
-  FiCheckCircle,
-  FiClock,
-  FiXCircle,
-  FiEdit2,
-  FiTrash2,
-  FiX,
-} from "react-icons/fi";
+console.log("🔥 Orders routes loaded");
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+const express = require("express");
+const { db } = require("../firebaseAdmin");
+const verifyToken = require("../middleware/authMiddleware");
 
-import DashboardLayout from "../../layouts/DashboardLayout";
-
-import { useCurrency } from "../../context/CurrencyContext";
-import { useSearch } from "../../context/SearchContext";
-import { useData } from "../../context/DataContext";
-
-import api from "../../services/api";
-
-import toast from "react-hot-toast";
+const router = express.Router();
 
 
-export default function Orders() {
+// ===============================
+// TEST ROUTE
+// ===============================
 
-
-  const {
-    currencySymbol,
-    convertAmount
-  } = useCurrency();
-
-
-  const {
-    search,
-    addSearchItems
-  } = useSearch();
-
-
-  const {
-    orders,
-    loadOrders
-  } = useData();
-
-
-
-  const [loading,setLoading] = useState(false);
-
-  const [showModal,setShowModal] = useState(false);
-
-  const [editOrder,setEditOrder] = useState(null);
-
-
-
-  const [form,setForm] = useState({
-
-    customer:"",
-    product:"",
-    quantity:"",
-    amount:"",
-    status:"Pending"
-
+router.post("/test", (req, res) => {
+  res.json({
+    success: true,
+    message: "POST orders working",
+    body: req.body,
   });
+});
 
 
+// ===============================
+// GET ALL ORDERS
+// ===============================
 
-  useEffect(()=>{
+router.get("/", verifyToken, async (req, res) => {
+  try {
 
-    loadOrders();
+    const snapshot = await db
+      .collection("orders")
+      .orderBy("createdAt", "desc")
+      .get();
 
-  },[]);
+    const orders = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
 
-
-
-  useEffect(()=>{
-
-    if(orders.length){
-
-      addSearchItems(
-
-        orders.map(order=>({
-
-          name:order.customer,
-          type:"Order",
-          path:"/orders"
-
-        }))
-
-      );
-
-    }
-
-  },[orders]);
-
-
-
-
-
-  function openAdd(){
-
-    setEditOrder(null);
-
-    setForm({
-
-      customer:"",
-      product:"",
-      quantity:"",
-      amount:"",
-      status:"Pending"
-
+    res.status(200).json({
+      success: true,
+      data: orders,
     });
 
+  } catch (error) {
 
-    setShowModal(true);
+    console.error(error);
 
-  }
-
-
-
-
-
-  function openEdit(order){
-
-    setEditOrder(order);
-
-
-    setForm({
-
-      customer:order.customer,
-      product:order.product,
-      quantity:order.quantity || 1,
-      amount:order.amount,
-      status:order.status
-
+    res.status(500).json({
+      success: false,
+      message: error.message,
     });
 
+  }
+});
 
-    setShowModal(true);
+
+// ===============================
+// GET SINGLE ORDER
+// ===============================
+
+router.get("/:id", verifyToken, async (req, res) => {
+
+  try {
+
+    const doc = await db
+      .collection("orders")
+      .doc(req.params.id)
+      .get();
+
+    if (!doc.exists) {
+
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+
+    }
+
+    res.json({
+      success: true,
+      data: {
+        id: doc.id,
+        ...doc.data(),
+      },
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
 
   }
 
+});
 
 
+// ===============================
+// ADD ORDER + REDUCE PRODUCT STOCK
+// ===============================
 
+router.post("/", verifyToken, async (req, res) => {
 
-  async function saveOrder(e){
+  try {
 
-    e.preventDefault();
+    const {
+      customer,
+      product,
+      quantity,
+      amount,
+      status,
+    } = req.body;
 
+    if (!customer || !product || amount === undefined) {
 
-
-    if(
-      !form.customer ||
-      !form.product ||
-      !form.amount
-    ){
-
-      toast.error("Please fill all fields");
-      return;
-
-    }
-
-
-
-    try{
-
-      setLoading(true);
-
-
-
-      const data={
-
-        ...form,
-
-        quantity:Number(form.quantity) || 1,
-
-        amount:Number(form.amount)
-
-      };
-
-
-
-      if(editOrder){
-
-
-        await api.put(
-
-          `/orders/${editOrder.id}`,
-
-          data
-
-        );
-
-
-        toast.success("Order updated");
-
-
-      }
-      else{
-
-
-        await api.post(
-
-          "/orders",
-
-          data
-
-        );
-
-
-        toast.success("Order added");
-
-
-      }
-
-
-
-      await loadOrders();
-
-
-
-      setShowModal(false);
-
-      setEditOrder(null);
-
-
-
-    }
-    catch(error){
-
-
-      console.error(error.response?.data || error);
-
-
-      toast.error(
-
-        error.response?.data?.message ||
-
-        "Failed to save order"
-
-      );
-
+      return res.status(400).json({
+        success: false,
+        message: "Customer, product and amount are required",
+      });
 
     }
 
+    const qty = Number(quantity) || 1;
 
+    // Find Product
 
-    setLoading(false);
+    const productSnapshot = await db
+      .collection("products")
+      .where("name", "==", product)
+      .limit(1)
+      .get();
 
+    if (productSnapshot.empty) {
+
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+
+    }
+
+    const productDoc = productSnapshot.docs[0];
+    const productData = productDoc.data();
+
+    const currentStock = Number(productData.stock) || 0;
+
+    if (currentStock < qty) {
+
+      return res.status(400).json({
+        success: false,
+        message: "Not enough stock available",
+      });
+
+    }
+
+    // Reduce Stock
+
+    await db
+      .collection("products")
+      .doc(productDoc.id)
+      .update({
+        stock: currentStock - qty,
+      });
+
+    const order = {
+
+      customer,
+      product,
+      quantity: qty,
+      amount: Number(amount),
+      status: status || "Pending",
+
+      createdAt: new Date(),
+
+      createdBy: req.user.uid,
+    };
+
+    const orderRef = await db
+      .collection("orders")
+      .add(order);
+
+    res.status(201).json({
+      success: true,
+      message: "Order created successfully",
+      data: {
+        id: orderRef.id,
+        ...order,
+      },
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
 
   }
 
+});
+// ===============================
+// UPDATE ORDER
+// ===============================
 
+router.put("/:id", verifyToken, async (req, res) => {
 
+  try {
 
+    const docRef = db
+      .collection("orders")
+      .doc(req.params.id);
 
-  async function deleteOrder(id){
+    const oldDoc = await docRef.get();
 
+    if (!oldDoc.exists) {
 
-    if(!window.confirm("Delete this order?"))
-
-      return;
-
-
-
-    try{
-
-
-      await api.delete(`/orders/${id}`);
-
-
-      toast.success("Order deleted");
-
-
-      loadOrders();
-
-
-
-    }
-    catch(error){
-
-      console.error(error);
-
-      toast.error("Delete failed");
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
 
     }
 
+    const updateData = {};
+
+    if (req.body.customer !== undefined)
+      updateData.customer = req.body.customer;
+
+    if (req.body.product !== undefined)
+      updateData.product = req.body.product;
+
+    if (req.body.quantity !== undefined)
+      updateData.quantity = Number(req.body.quantity);
+
+    if (req.body.amount !== undefined)
+      updateData.amount = Number(req.body.amount);
+
+    if (req.body.status !== undefined)
+      updateData.status = req.body.status;
+
+    updateData.updatedAt = new Date();
+
+    await docRef.update(updateData);
+
+    const updatedDoc = await docRef.get();
+
+    res.json({
+      success: true,
+      message: "Order updated successfully",
+      data: {
+        id: updatedDoc.id,
+        ...updatedDoc.data(),
+      },
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
 
   }
 
+});
 
 
+// ===============================
+// DELETE ORDER
+// ===============================
 
+router.delete("/:id", verifyToken, async (req, res) => {
 
-  const filteredOrders = orders.filter(order=>{
+  try {
 
+    const docRef = db
+      .collection("orders")
+      .doc(req.params.id);
 
-    const text = search.toLowerCase();
+    const orderDoc = await docRef.get();
 
+    if (!orderDoc.exists) {
 
-    return (
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
 
-      order.customer
-      ?.toLowerCase()
-      .includes(text)
+    }
 
-      ||
+    const order = orderDoc.data();
 
-      order.product
-      ?.toLowerCase()
-      .includes(text)
+    // Restore stock when deleting an order
+    const productSnapshot = await db
+      .collection("products")
+      .where("name", "==", order.product)
+      .limit(1)
+      .get();
 
-    );
+    if (!productSnapshot.empty) {
 
+      const productDoc = productSnapshot.docs[0];
+      const productData = productDoc.data();
 
-  });
+      await db
+        .collection("products")
+        .doc(productDoc.id)
+        .update({
+          stock:
+            (Number(productData.stock) || 0) +
+            (Number(order.quantity) || 1),
+        });
 
+    }
 
+    await docRef.delete();
 
+    res.json({
+      success: true,
+      message: "Order deleted successfully",
+    });
 
+  } catch (error) {
 
-return (
+    console.error(error);
 
-<DashboardLayout>
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
 
+  }
 
-<div className="space-y-8">
+});
 
 
-<div className="
-rounded-3xl
-bg-white/5
-border border-white/10
-backdrop-blur-xl
-p-8
-flex
-justify-between
-items-center
-">
-
-
-<div>
-
-<h1 className="
-text-3xl
-font-bold
-text-white
-">
-
-Orders
-
-</h1>
-
-
-<p className="
-text-slate-400
-">
-
-Manage customer orders
-
-</p>
-
-
-</div>
-
-
-
-<button
-
-onClick={openAdd}
-
-className="
-bg-cyan-500
-hover:bg-cyan-400
-text-white
-px-5
-py-3
-rounded-xl
-flex
-items-center
-gap-2
-"
-
->
-
-<FiPlus/>
-
-Add Order
-
-</button>
-
-
-</div>
-
-
-
-
-
-<div className="space-y-5">
-
-
-{
-filteredOrders.map(order=>(
-
-
-<motion.div
-
-key={order.id}
-
-whileHover={{scale:1.02}}
-
-className="
-rounded-3xl
-bg-white/5
-border border-white/10
-backdrop-blur-xl
-p-6
-"
-
-
->
-
-
-<div className="
-flex
-justify-between
-items-center
-">
-
-
-<div className="
-flex
-gap-5
-items-center
-">
-
-
-<div className="
-bg-cyan-500/20
-p-4
-rounded-xl
-">
-
-<FiShoppingCart className="text-cyan-400 text-2xl"/>
-
-</div>
-
-
-
-<div>
-
-<h2 className="
-text-xl
-font-bold
-text-white
-">
-
-{order.customer}
-
-</h2>
-
-
-<p className="text-slate-400">
-
-{order.product}
-
-</p>
-
-
-<p className="text-white mt-2">
-
-{currencySymbol}
-
-{Math.round(
-convertAmount(order.amount)
-).toLocaleString()}
-
-</p>
-
-
-</div>
-
-
-</div>
-
-
-
-
-<div className="flex gap-4 items-center">
-
-
-<span className={
-
-order.status==="Completed"
-
-?
-
-"bg-green-500/20 text-green-400 px-4 py-2 rounded-full flex gap-2 items-center"
-
-:
-
-order.status==="Pending"
-
-?
-
-"bg-yellow-500/20 text-yellow-400 px-4 py-2 rounded-full flex gap-2 items-center"
-
-:
-
-"bg-red-500/20 text-red-400 px-4 py-2 rounded-full flex gap-2 items-center"
-
-}>
-
-
-{
-
-order.status==="Completed"
-
-?
-
-<FiCheckCircle/>
-
-:
-
-order.status==="Pending"
-
-?
-
-<FiClock/>
-
-:
-
-<FiXCircle/>
-
-}
-
-
-{order.status}
-
-</span>
-
-
-
-
-<button
-
-onClick={()=>openEdit(order)}
-
-className="text-cyan-400"
-
->
-
-<FiEdit2/>
-
-</button>
-
-
-
-<button
-
-onClick={()=>deleteOrder(order.id)}
-
-className="text-red-400"
-
->
-
-<FiTrash2/>
-
-</button>
-
-
-</div>
-
-
-</div>
-
-
-</motion.div>
-
-
-))
-}
-
-
-</div>
-
-
-
-
-
-{
-showModal &&
-
-<div className="
-fixed inset-0
-z-50
-flex
-items-center
-justify-center
-bg-black/60
-backdrop-blur-sm
-">
-
-
-<div className="
-bg-[#07111f]
-border border-white/10
-rounded-3xl
-p-8
-w-full
-max-w-md
-">
-
-
-<div className="
-flex
-justify-between
-mb-6
-">
-
-
-<h2 className="
-text-2xl
-font-bold
-text-white
-">
-
-{
-editOrder
-?
-"Edit Order"
-:
-"Add Order"
-}
-
-</h2>
-
-
-<button
-
-onClick={()=>setShowModal(false)}
-
->
-
-<FiX className="text-white"/>
-
-</button>
-
-
-</div>
-
-
-
-
-
-<form
-
-onSubmit={saveOrder}
-
-className="space-y-4"
-
->
-
-
-<input
-
-placeholder="Customer"
-
-value={form.customer}
-
-onChange={e=>setForm({...form,customer:e.target.value})}
-
-className="input-style"
-
-/>
-
-
-
-<input
-
-placeholder="Product"
-
-value={form.product}
-
-onChange={e=>setForm({...form,product:e.target.value})}
-
-className="input-style"
-
-/>
-
-
-
-<input
-
-placeholder="Quantity"
-
-type="number"
-
-value={form.quantity}
-
-onChange={e=>setForm({...form,quantity:e.target.value})}
-
-className="input-style"
-
-/>
-
-
-
-<input
-
-placeholder="Amount"
-
-type="number"
-
-value={form.amount}
-
-onChange={e=>setForm({...form,amount:e.target.value})}
-
-className="input-style"
-
-/>
-
-
-
-<select
-
-value={form.status}
-
-onChange={e=>setForm({...form,status:e.target.value})}
-
-className="input-style"
-
->
-
-<option>Pending</option>
-
-<option>Completed</option>
-
-<option>Cancelled</option>
-
-</select>
-
-
-
-<button
-
-disabled={loading}
-
-className="
-w-full
-bg-gradient-to-r
-from-cyan-500
-to-blue-600
-py-3
-rounded-xl
-text-white
-"
-
->
-
-{
-
-loading
-
-?
-
-"Saving..."
-
-:
-
-"Save Order"
-
-}
-
-</button>
-
-
-
-</form>
-
-
-</div>
-
-
-</div>
-
-}
-
-
-</div>
-
-
-</DashboardLayout>
-
-);
-
-}
+module.exports = router;
