@@ -1,5 +1,4 @@
 ﻿import DashboardLayout from "../../layouts/DashboardLayout";
-
 import {
   FiDollarSign,
   FiBox,
@@ -19,6 +18,7 @@ import SalesTrend from "./SalesTrend";
 import TopProducts from "./TopProducts";
 
 import { useCurrency } from "../../context/CurrencyContext";
+import { useData } from "../../context/DataContext";
 import { useSearch } from "../../context/SearchContext";
 
 
@@ -33,52 +33,24 @@ const {
 const {
   search
 } = useSearch();
+const {
+  orders,
+  products,
+  stats
+} = useData();
 
 
 
-const orders = [
 
-{
-id:"#1024",
-product:"MacBook Pro",
-price:120000,
-status:"Completed"
-},
-
-{
-id:"#1025",
-product:"Gaming Keyboard",
-price:8500,
-status:"Pending"
-},
-
-{
-id:"#1026",
-product:"4K Monitor",
-price:32000,
-status:"Completed"
-},
-
-{
-id:"#1027",
-product:"Wireless Mouse",
-price:2500,
-status:"Completed"
-}
-
-];
+const filteredOrders = orders
+  .filter((order) =>
+    order.product
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  )
+  .slice(0, 5);
 
 
-
-const filteredOrders = orders.filter((order)=>
-
-order.product
-.toLowerCase()
-.includes(
-search.toLowerCase()
-)
-
-);
 
 
 
@@ -108,7 +80,7 @@ lg:grid-cols-4
 
 title="Revenue"
 
-value={1528860}
+value={stats.revenue}
 
 isCurrency={true}
 
@@ -128,7 +100,7 @@ iconColor="text-emerald-400"
 
 title="Orders"
 
-value="267"
+value={stats.totalOrders}
 
 icon={<FiShoppingCart/>}
 
@@ -146,7 +118,7 @@ iconColor="text-blue-400"
 
 title="Products"
 
-value="421"
+value={stats.totalProducts}
 
 icon={<FiBox/>}
 
@@ -164,7 +136,7 @@ iconColor="text-purple-400"
 
 title="Low Stock"
 
-value="14"
+value={stats.lowStock}
 
 icon={<FiAlertTriangle/>}
 
@@ -705,7 +677,7 @@ text-slate-400
 
 {" • "}
 
-{formatCurrency(order.price)}
+{formatCurrency(order.amount)}
 
 </p>
 

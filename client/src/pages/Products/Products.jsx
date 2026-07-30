@@ -4,313 +4,178 @@
   FiAlertTriangle,
   FiEdit2,
   FiTrash2,
-  FiX
+  FiX,
 } from "react-icons/fi";
-
 
 import {
   useState,
-  useEffect
+  useEffect,
 } from "react";
-
 
 import { motion } from "framer-motion";
 
-
 import DashboardLayout from "../../layouts/DashboardLayout";
-
 
 import { useCurrency } from "../../context/CurrencyContext";
 
-
 import { useSearch } from "../../context/SearchContext";
-
 
 import { useData } from "../../context/DataContext";
 
+import api from "../../services/api";
+
+import toast from "react-hot-toast";
+
+export default function Products() {
+  const {
+    currencySymbol,
+    convertAmount,
+  } = useCurrency();
+
+  const {
+    search,
+    addSearchItems,
+  } = useSearch();
+
+  const {
+    products,
+    loadProducts,
+  } = useData();
+
+  const [loading, setLoading] = useState(false);
+
+  const [showModal, setShowModal] = useState(false);
+
+  const [editProduct, setEditProduct] = useState(null);
+
+  const [form, setForm] = useState({
+    name: "",
+    category: "",
+    price: "",
+    stock: "",
+  });
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  useEffect(() => {
+    if (products.length) {
+      addSearchItems(
+        products.map((product) => ({
+          name: product.name,
+          type: "Product",
+          path: "/products",
+        }))
+      );
+    }
+  }, [products]);
+
+  function openAdd() {
+    setEditProduct(null);
+
+    setForm({
+      name: "",
+      category: "",
+      price: "",
+      stock: "",
+    });
+
+    setShowModal(true);
+  }
+
+  function openEdit(product) {
+    setEditProduct(product);
+
+    setForm({
+      name: product.name,
+      category: product.category,
+      price: product.price,
+      stock: product.stock,
+    });
+
+    setShowModal(true);
+  }
+
+  async function saveProduct(e) {
+    e.preventDefault();
+
+    if (
+      !form.name ||
+      !form.category ||
+      !form.price ||
+      !form.stock
+    ) {
+      toast.error("Please fill all fields");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      if (editProduct) {
+        await api.put(`/products/${editProduct.id}`, {
+          ...form,
+          price: Number(form.price),
+          stock: Number(form.stock),
+        });
+
+        toast.success("Product updated");
+      } else {
+        await api.post("/products", {
+          ...form,
+          price: Number(form.price),
+          stock: Number(form.stock),
+        });
 
+        toast.success("Product added");
+      }
 
+      await loadProducts();
 
+      setShowModal(false);
 
-export default function Products(){
+      setEditProduct(null);
 
+      setForm({
+        name: "",
+        category: "",
+        price: "",
+        stock: "",
+      });
+    } catch (error) {
+      console.error(error);
 
-const {
-currencySymbol,
-convertAmount
-}=useCurrency();
+      toast.error("Failed to save product");
+    }
 
+    setLoading(false);
+  }
 
+  async function deleteProduct(id) {
+    if (!window.confirm("Delete this product?")) return;
 
+    try {
+      await api.delete(`/products/${id}`);
 
-const {
-search,
-addSearchItems
-}=useSearch();
+      toast.success("Product deleted");
 
+      await loadProducts();
+    } catch (error) {
+      console.error(error);
 
+      toast.error("Delete failed");
+    }
+  }
 
+  const filteredProducts = products.filter((product) => {
+    const text = search.toLowerCase();
 
-const {
-products,
-setProducts
-}=useData();
-
-
-
-
-
-
-useEffect(()=>{
-
-
-if(products?.length){
-
-
-addSearchItems(
-
-products.map(product=>({
-
-name:product.name,
-
-type:"Product",
-
-path:"/products"
-
-}))
-
-);
-
-
-}
-
-
-},[products]);
-
-
-
-
-
-
-
-const [showModal,setShowModal]=useState(false);
-
-
-const [editProduct,setEditProduct]=useState(null);
-
-
-
-
-const [form,setForm]=useState({
-
-name:"",
-category:"",
-price:"",
-stock:""
-
-});
-
-
-
-
-
-
-
-
-
-function openAdd(){
-
-
-setEditProduct(null);
-
-
-setForm({
-
-name:"",
-category:"",
-price:"",
-stock:""
-
-});
-
-
-setShowModal(true);
-
-
-}
-
-
-
-
-
-
-function openEdit(product){
-
-
-setEditProduct(product);
-
-
-setForm(product);
-
-
-setShowModal(true);
-
-
-}
-
-
-
-
-
-
-
-function saveProduct(e){
-
-
-e.preventDefault();
-
-
-
-if(
-!form.name ||
-!form.category ||
-!form.price ||
-!form.stock
-)
-
-return;
-
-
-
-
-
-
-if(editProduct){
-
-
-setProducts(
-
-products.map(item=>
-
-item.id===editProduct.id
-
-?
-
-{
-
-...form,
-
-id:item.id,
-
-price:Number(form.price),
-
-stock:Number(form.stock)
-
-}
-
-:
-
-item
-
-)
-
-);
-
-
-
-}
-
-else{
-
-
-setProducts([
-
-...products,
-
-{
-
-...form,
-
-id:Date.now(),
-
-price:Number(form.price),
-
-stock:Number(form.stock)
-
-}
-
-]);
-
-
-}
-
-
-
-setShowModal(false);
-
-
-}
-
-
-
-
-
-
-
-
-function deleteProduct(id){
-
-
-setProducts(
-
-products.filter(
-
-item=>item.id!==id
-
-)
-
-);
-
-
-}
-
-
-
-
-
-
-
-
-
-const filteredProducts =
-products.filter(product=>
-
-
-product.name
-
-.toLowerCase()
-
-.includes(search.toLowerCase())
-
-||
-
-product.category
-
-.toLowerCase()
-
-.includes(search.toLowerCase())
-
-
-);
-
-
-
-
-
-
-
-
-
+    return (
+      product.name.toLowerCase().includes(text) ||
+      product.category.toLowerCase().includes(text)
+    );
+  });
 return(
 
 
@@ -891,7 +756,7 @@ outline-none
 
 
 <button
-
+disabled={loading}
 className="
 w-full
 rounded-xl
@@ -901,19 +766,18 @@ to-blue-600
 py-3
 font-semibold
 text-white
+disabled:opacity-60
+disabled:cursor-not-allowed
 "
-
 >
 
 
 {
-
-editProduct
+loading
 ?
-"Update Product"
+(editProduct ? "Updating..." : "Saving...")
 :
-"Save Product"
-
+(editProduct ? "Update Product" : "Save Product")
 }
 
 

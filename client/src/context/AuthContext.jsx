@@ -67,59 +67,47 @@ return unsubscribe;
 
 // GOOGLE LOGIN
 
-const googleLogin = async()=>{
+const googleLogin = async () => {
+  try {
+    console.log("1. Opening Google popup");
 
+    const result = await signInWithPopup(auth, googleProvider);
 
-try{
+    console.log("2. Google login successful");
 
+    const user = result.user;
 
-const result =
-await signInWithPopup(
-auth,
-googleProvider
-);
+    const token = await user.getIdToken();
 
+    console.log("3. Token received");
 
+    console.log("API URL:", import.meta.env.VITE_API_URL);
 
-const user =
-result.user;
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/users/login`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
+    console.log("4. Response Status:", response.status);
 
+    const data = await response.json();
 
-setUser(user);
+    console.log("5. Response:", data);
 
+    setUser(user);
 
-
-return user;
-
-
-
-}
-
-catch(error){
-
-
-console.log(
-"Google Login Error:",
-error
-);
-
-
-throw error;
-
-
-}
-
-
+    return user;
+  } catch (error) {
+    console.error("GOOGLE LOGIN ERROR:", error);
+    throw error;
+  }
 };
-
-
-
-
-
-
-
-
 
 // LOGOUT
 

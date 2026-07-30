@@ -115,12 +115,10 @@ navigate("/dashboard");
 
 }
 
-catch(error){
+catch (error) {
+  console.error("Google Login Error:", error);
 
-console.log("GOOGLE LOGIN ERROR:", error);
-
-toast.error(error.code || error.message);
-
+  toast.error(error.code || error.message);
 }
 
 

@@ -1,89 +1,81 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import api from "../services/api";
 
 const DataContext = createContext();
 
 export function DataProvider({ children }) {
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      name: "MacBook Pro",
-      category: "Laptop",
-      price: 120000,
-      stock: 25
-    },
-    {
-      id: 2,
-      name: "Gaming Keyboard",
-      category: "Accessories",
-      price: 8500,
-      stock: 8
-    },
-    {
-      id: 3,
-      name: "4K Monitor",
-      category: "Display",
-      price: 32000,
-      stock: 14
-    },
-    {
-      id: 4,
-      name: "Wireless Mouse",
-      category: "Accessories",
-      price: 2500,
-      stock: 35
-    }
-  ]);
+  const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [orders, setOrders] = useState([
-    {
-      id: 1,
-      customer: "Rahul Sharma",
-      product: "MacBook Pro",
-      amount: 120000,
-      status: "Completed"
-    },
-    {
-      id: 2,
-      customer: "Ananya Rao",
-      product: "Gaming Keyboard",
-      amount: 8500,
-      status: "Pending"
-    },
-    {
-      id: 3,
-      customer: "Kiran Kumar",
-      product: "4K Monitor",
-      amount: 32000,
-      status: "Completed"
-    },
-    {
-      id: 4,
-      customer: "Priya",
-      product: "Wireless Mouse",
-      amount: 2500,
-      status: "Completed"
+  const loadProducts = async () => {
+    try {
+      const res = await api.get("/products");
+      setProducts(res.data.data || []);
+    } catch (err) {
+      console.error("Products Error:", err);
     }
-  ]);
+  };
+
+  const loadOrders = async () => {
+    try {
+      const res = await api.get("/orders");
+      setOrders(res.data.data || []);
+    } catch (err) {
+      console.error("Orders Error:", err);
+    }
+  };
+
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true);
+
+      await Promise.all([
+        loadProducts(),
+        loadOrders(),
+      ]);
+
+      setLoading(false);
+    }
+
+    loadData();
+  }, []);
 
   const stats = useMemo(() => {
-    const revenue = orders.reduce((sum, order) => sum + order.amount, 0);
+    const revenue = orders.reduce(
+      (sum, order) => sum + Number(order.amount || 0),
+      0
+    );
 
     return {
       revenue,
       totalOrders: orders.length,
       totalProducts: products.length,
-      lowStock: products.filter((p) => p.stock < 10).length
+      lowStock: products.filter((p) => Number(p.stock) < 10).length,
     };
   }, [orders, products]);
 
   return (
     <DataContext.Provider
       value={{
+        loading,
+
         products,
         setProducts,
+        loadProducts,
+
         orders,
         setOrders,
-        stats
+        loadOrders,
+
+        stats,
       }}
     >
       {children}

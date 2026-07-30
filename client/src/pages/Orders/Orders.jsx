@@ -6,31 +6,25 @@
   FiXCircle,
   FiEdit2,
   FiTrash2,
-  FiX
+  FiX,
 } from "react-icons/fi";
-
 
 import {
   useState,
-  useEffect
+  useEffect,
 } from "react";
-
 
 import { motion } from "framer-motion";
 
-
 import DashboardLayout from "../../layouts/DashboardLayout";
 
-
 import { useCurrency } from "../../context/CurrencyContext";
-
-
 import { useSearch } from "../../context/SearchContext";
-
-
 import { useData } from "../../context/DataContext";
 
+import api from "../../services/api";
 
+import toast from "react-hot-toast";
 
 
 
@@ -38,66 +32,30 @@ export default function Orders(){
 
 
 const {
-currencySymbol,
-convertAmount
+ currencySymbol,
+ convertAmount
 }=useCurrency();
 
 
 
-
 const {
-search,
-addSearchItems
+ search,
+ addSearchItems
 }=useSearch();
 
 
 
-
 const {
-orders,
-setOrders
+ orders,
+ loadOrders
 }=useData();
 
 
 
 
-
-
-
-useEffect(()=>{
-
-
-if(orders?.length){
-
-
-addSearchItems(
-
-orders.map(order=>({
-
-name:order.customer,
-
-type:"Order",
-
-path:"/orders"
-
-}))
-
-);
-
-
-}
-
-
-},[orders]);
-
-
-
-
-
-
+const [loading,setLoading]=useState(false);
 
 const [showModal,setShowModal]=useState(false);
-
 
 const [editOrder,setEditOrder]=useState(null);
 
@@ -107,15 +65,57 @@ const [editOrder,setEditOrder]=useState(null);
 const [form,setForm]=useState({
 
 customer:"",
-
 product:"",
-
+quantity:"",
 amount:"",
-
 status:"Pending"
 
 });
 
+
+
+
+
+useEffect(()=>{
+
+loadOrders();
+
+},[]);
+
+
+
+
+
+
+useEffect(()=>{
+
+
+if(orders.length){
+
+
+addSearchItems(
+
+orders.map(order=>(
+
+{
+
+name:order.customer,
+
+type:"Order",
+
+path:"/orders"
+
+}
+
+))
+
+);
+
+
+}
+
+
+},[orders]);
 
 
 
@@ -133,11 +133,9 @@ setEditOrder(null);
 setForm({
 
 customer:"",
-
 product:"",
-
+quantity:"",
 amount:"",
-
 status:"Pending"
 
 });
@@ -154,17 +152,32 @@ setShowModal(true);
 
 
 
-
 function openEdit(order){
+
 
 
 setEditOrder(order);
 
 
-setForm(order);
+
+setForm({
+
+customer:order.customer || "",
+
+product:order.product || "",
+
+quantity:order.quantity || "",
+
+amount:order.amount || "",
+
+status:order.status || "Pending"
+
+});
+
 
 
 setShowModal(true);
+
 
 
 }
@@ -176,7 +189,7 @@ setShowModal(true);
 
 
 
-function saveOrder(e){
+async function saveOrder(e){
 
 
 e.preventDefault();
@@ -187,12 +200,33 @@ if(
 !form.customer ||
 !form.product ||
 !form.amount
-)
+){
+
+toast.error("Please fill all fields");
 
 return;
 
+}
 
 
+
+
+try{
+
+
+setLoading(true);
+
+
+
+const orderData={
+
+...form,
+
+quantity:Number(form.quantity)||1,
+
+amount:Number(form.amount)
+
+};
 
 
 
@@ -201,32 +235,16 @@ return;
 if(editOrder){
 
 
-setOrders(
+await api.put(
 
-orders.map(item=>
+`/orders/${editOrder.id}`,
 
-item.id===editOrder.id
-
-?
-
-{
-
-...form,
-
-id:item.id,
-
-amount:Number(form.amount)
-
-}
-
-:
-
-item
-
-)
+orderData
 
 );
 
+
+toast.success("Order updated");
 
 
 }
@@ -234,29 +252,73 @@ item
 else{
 
 
-setOrders([
+await api.post(
 
-...orders,
+"/orders",
 
-{
+orderData
 
-...form,
+);
 
-id:Date.now(),
 
-amount:Number(form.amount)
-
-}
-
-]);
+toast.success("Order added");
 
 
 }
+
+
+
+
+
+await loadOrders();
 
 
 
 setShowModal(false);
 
+setEditOrder(null);
+
+
+
+setForm({
+
+customer:"",
+product:"",
+quantity:"",
+amount:"",
+status:"Pending"
+
+});
+
+
+
+}
+catch(error){
+
+
+console.error(
+
+error.response?.data || error
+
+);
+
+
+
+toast.error(
+
+error.response?.data?.message ||
+
+"Failed to save order"
+
+);
+
+
+}
+
+
+setLoading(false);
+
+
 
 }
 
@@ -267,19 +329,40 @@ setShowModal(false);
 
 
 
+async function deleteOrder(id){
 
-function deleteOrder(id){
+
+if(!window.confirm("Delete this order?"))
+
+return;
 
 
-setOrders(
 
-orders.filter(
+try{
 
-item=>item.id!==id
 
-)
+await api.delete(`/orders/${id}`);
 
-);
+
+toast.success("Order deleted");
+
+
+loadOrders();
+
+
+}
+
+catch(error){
+
+
+console.error(error);
+
+
+toast.error("Delete failed");
+
+
+}
+
 
 
 }
@@ -290,40 +373,30 @@ item=>item.id!==id
 
 
 
+const filteredOrders = orders.filter(order=>{
 
 
-const filteredOrders =
-orders.filter(order=>
-
-
-order.customer
-
-.toLowerCase()
-
-.includes(search.toLowerCase())
-
-
-||
-
-order.product
-
-.toLowerCase()
-
-.includes(search.toLowerCase())
-
-
-);
-
-
-
-
-
-
+const text=search.toLowerCase();
 
 
 
 return(
 
+order.customer
+?.toLowerCase()
+.includes(text)
+
+||
+
+order.product
+?.toLowerCase()
+.includes(text)
+
+);
+
+
+});
+return(
 
 <DashboardLayout>
 
@@ -334,8 +407,8 @@ return(
 
 
 
-
-<div className="
+<div
+className="
 rounded-3xl
 bg-white/5
 border
@@ -345,27 +418,31 @@ p-8
 flex
 justify-between
 items-center
-">
+"
+>
 
 
 <div>
 
 
-<h1 className="
+<h1
+className="
 text-3xl
 font-bold
 text-white
-">
+"
+>
 
 Orders
 
 </h1>
 
 
-
-<p className="
+<p
+className="
 text-slate-400
-">
+"
+>
 
 Manage customer orders
 
@@ -373,7 +450,6 @@ Manage customer orders
 
 
 </div>
-
 
 
 
@@ -397,15 +473,11 @@ transition
 
 >
 
-
 <FiPlus/>
 
 Add Order
 
-
 </button>
-
-
 
 
 </div>
@@ -417,15 +489,13 @@ Add Order
 
 
 
-
 <div className="space-y-5">
-
 
 
 {
 
-filteredOrders.map(order=>(
 
+filteredOrders.map(order=>(
 
 
 <motion.div
@@ -435,9 +505,7 @@ key={order.id}
 
 
 whileHover={{
-
 scale:1.02
-
 }}
 
 
@@ -454,39 +522,43 @@ p-6
 >
 
 
-<div className="
+
+<div
+className="
 flex
 justify-between
 items-center
 gap-5
-">
+"
+>
 
 
 
 
-
-
-<div className="
+<div
+className="
 flex
 items-center
 gap-5
-">
+"
+>
 
 
-<div className="
+
+<div
+className="
 bg-cyan-500/20
 p-4
 rounded-xl
-">
+"
+>
 
 
 <FiShoppingCart
-
 className="
 text-cyan-400
 text-2xl
 "
-
 />
 
 
@@ -496,16 +568,17 @@ text-2xl
 
 
 
-
-
 <div>
 
 
-<h2 className="
+
+<h2
+className="
 text-xl
 font-bold
 text-white
-">
+"
+>
 
 {order.customer}
 
@@ -513,10 +586,11 @@ text-white
 
 
 
-
-<p className="
+<p
+className="
 text-slate-400
-">
+"
+>
 
 {order.product}
 
@@ -525,70 +599,140 @@ text-slate-400
 
 
 
-
-<p className="
+<p
+className="
 text-white
 mt-2
-">
+"
+>
 
 
 {currencySymbol}
 
-{Math.round(
+{
+
+Math.round(
 
 convertAmount(order.amount)
 
-).toLocaleString()}
+)
+
+.toLocaleString("en-GB")
+
+}
 
 
 </p>
 
 
-</div>
+
+<p
+className="
+text-sm
+text-slate-400
+mt-1
+"
+>
+
+Qty: {order.quantity || 1}
+
+</p>
+
+
 
 
 </div>
 
 
 
+</div>
 
 
 
 
 
-<div className="
+
+
+
+<div
+className="
 flex
 items-center
 gap-4
-">
+"
+>
 
 
 
 <span
 
+
 className={
+
 
 order.status==="Completed"
 
+
 ?
 
-"flex items-center gap-2 bg-green-500/20 text-green-400 px-4 py-2 rounded-full"
+
+`
+flex
+items-center
+gap-2
+bg-green-500/20
+text-green-400
+px-4
+py-2
+rounded-full
+`
+
+
 
 :
+
 
 order.status==="Pending"
 
+
 ?
 
-"flex items-center gap-2 bg-yellow-500/20 text-yellow-400 px-4 py-2 rounded-full"
+
+`
+flex
+items-center
+gap-2
+bg-yellow-500/20
+text-yellow-400
+px-4
+py-2
+rounded-full
+`
+
+
 
 :
 
-"flex items-center gap-2 bg-red-500/20 text-red-400 px-4 py-2 rounded-full"
+
+`
+flex
+items-center
+gap-2
+bg-red-500/20
+text-red-400
+px-4
+py-2
+rounded-full
+`
+
+
 
 }
 
+
 >
+
+
 
 
 {
@@ -614,7 +758,9 @@ order.status==="Pending"
 }
 
 
+
 {order.status}
+
 
 
 </span>
@@ -631,6 +777,8 @@ onClick={()=>openEdit(order)}
 
 className="
 text-cyan-400
+hover:text-cyan-300
+transition
 "
 
 >
@@ -651,6 +799,8 @@ onClick={()=>deleteOrder(order.id)}
 
 className="
 text-red-400
+hover:text-red-300
+transition
 "
 
 >
@@ -662,15 +812,19 @@ text-red-400
 
 
 
-</div>
-
-
 
 
 </div>
+
+
+
+
+</div>
+
 
 
 </motion.div>
+
 
 
 ))
@@ -686,68 +840,82 @@ text-red-400
 
 
 
-
-
-
-
-{/* ORDER MODAL */}
-
-
-
 {
-
 showModal &&
 
 
-<div className="
+<div
+
+className="
 fixed
 inset-0
 z-50
 flex
 items-center
 justify-center
-bg-black/60
-backdrop-blur-sm
-">
+bg-black/70
+backdrop-blur-md
+"
+
+>
 
 
 
-<div className="
+<div
+
+className="
 w-full
 max-w-md
 rounded-3xl
 border
-border-white/10
-bg-[#07111f]
-p-8
+border-white/20
+bg-[#07111f]/80
+backdrop-blur-2xl
 shadow-2xl
-">
+shadow-cyan-500/10
+p-8
+"
+
+>
 
 
 
 
 
-<div className="
+<div
+
+className="
 flex
 justify-between
 items-center
 mb-6
-">
+"
+
+>
 
 
-<h2 className="
+
+<h2
+
+className="
 text-2xl
 font-bold
 text-white
-">
+"
+
+>
 
 
 {
 
 editOrder
+
 ?
+
 "Edit Order"
+
 :
+
 "Add Order"
 
 }
@@ -766,13 +934,12 @@ onClick={()=>setShowModal(false)}
 className="
 text-slate-400
 hover:text-white
+transition
 "
 
 >
 
-
 <FiX size={24}/>
-
 
 </button>
 
@@ -800,121 +967,127 @@ space-y-4
 
 
 
+
+{
+
+[
+
+{
+key:"customer",
+placeholder:"Customer Name",
+type:"text"
+},
+
+{
+key:"product",
+placeholder:"Product Name",
+type:"text"
+},
+
+{
+key:"quantity",
+placeholder:"Quantity",
+type:"number"
+},
+
+{
+key:"amount",
+placeholder:"Amount",
+type:"number"
+}
+
+
+].map(item=>(
+
+
+
 <input
 
-placeholder="Customer Name"
 
-value={form.customer}
+key={item.key}
 
-onChange={
-e=>setForm({
+
+type={item.type}
+
+
+
+placeholder={item.placeholder}
+
+
+
+value={form[item.key]}
+
+
+
+onChange={e=>
+
+setForm({
+
 ...form,
-customer:e.target.value
+
+[item.key]:e.target.value
+
 })
+
 }
+
+
 
 className="
 w-full
 rounded-xl
 bg-white/10
 border
-border-white/10
+border-white/20
 p-3
 text-white
+placeholder:text-slate-400
 outline-none
+focus:border-cyan-400
+focus:ring-2
+focus:ring-cyan-400/30
+transition
 "
+
 
 />
 
 
 
+))
 
 
-
-
-<input
-
-placeholder="Product Name"
-
-value={form.product}
-
-onChange={
-e=>setForm({
-...form,
-product:e.target.value
-})
 }
 
-className="
-w-full
-rounded-xl
-bg-white/10
-border
-border-white/10
-p-3
-text-white
-outline-none
-"
-
-/>
 
 
 
 
 
-
-
-<input
-
-placeholder="Amount"
-
-type="number"
-
-value={form.amount}
-
-onChange={
-e=>setForm({
-...form,
-amount:e.target.value
-})
-}
-
-className="
-w-full
-rounded-xl
-bg-white/10
-border
-border-white/10
-p-3
-text-white
-outline-none
-"
-
-/>
-
-
-
-
-
-
-
-
-<div className="relative">
 
 
 <select
 
+
 value={form.status}
 
-onChange={
-e=>setForm({
+
+
+onChange={e=>
+
+setForm({
+
 ...form,
+
 status:e.target.value
+
 })
+
 }
 
+
+
 className="
-appearance-none
 w-full
 rounded-xl
 bg-white/10
@@ -923,67 +1096,74 @@ border-white/20
 p-3
 text-white
 outline-none
-backdrop-blur-xl
 cursor-pointer
+focus:border-cyan-400
+focus:ring-2
+focus:ring-cyan-400/30
 "
 
 >
 
 
 <option
+
 value="Pending"
-className="bg-[#07111f] text-white"
+
+className="bg-[#07111f]"
+
 >
+
 Pending
+
 </option>
 
 
+
+
 <option
+
 value="Completed"
-className="bg-[#07111f] text-white"
+
+className="bg-[#07111f]"
+
 >
+
 Completed
+
 </option>
+
+
 
 
 <option
+
 value="Cancelled"
-className="bg-[#07111f] text-white"
+
+className="bg-[#07111f]"
+
 >
+
 Cancelled
+
 </option>
+
 
 
 </select>
 
 
 
-<div
-
-className="
-absolute
-right-4
-top-1/2
--translate-y-1/2
-pointer-events-none
-text-slate-300
-"
-
->
-
-⌄
-
-</div>
-
-
-
-</div>
 
 
 
 
 
 <button
+
+
+disabled={loading}
+
+
 
 className="
 w-full
@@ -994,20 +1174,31 @@ to-blue-600
 py-3
 font-semibold
 text-white
+shadow-lg
+shadow-cyan-500/20
+hover:scale-[1.02]
+transition
+disabled:opacity-50
 "
+
 
 >
 
 
 {
 
-editOrder
+loading
+
 ?
-"Update Order"
+
+(editOrder ? "Updating..." : "Saving...")
+
 :
-"Save Order"
+
+(editOrder ? "Update Order" : "Save Order")
 
 }
+
 
 
 </button>
@@ -1022,15 +1213,18 @@ editOrder
 
 
 
+
 </div>
 
 
+
+
+
 </div>
+
 
 
 }
-
-
 
 
 
@@ -1042,7 +1236,6 @@ editOrder
 </DashboardLayout>
 
 
-)
-
+);
 
 }
