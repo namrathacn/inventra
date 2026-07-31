@@ -5,6 +5,60 @@ const { db } = require("../firebaseAdmin");
 const verifyToken = require("../middleware/authMiddleware");
 
 const router = express.Router();
+// =======================================
+// PRODUCT HELPERS
+// =======================================
+
+async function findProductByName(productName) {
+  const snapshot = await db
+    .collection("products")
+    .where("name", "==", productName)
+    .limit(1)
+    .get();
+    console.log("Searching for product:", productName);
+console.log("Documents found:", snapshot.size);
+    
+
+  if (snapshot.empty) return null;
+
+  return snapshot.docs[0];
+}
+
+async function increaseStock(productName, qty) {
+  const productDoc = await findProductByName(productName);
+
+  if (!productDoc) return;
+
+  const data = productDoc.data();
+
+  await productDoc.ref.update({
+    stock: (Number(data.stock) || 0) + Number(qty),
+  });
+}
+
+async function decreaseStock(productName, qty) {
+  const productDoc = await findProductByName(productName);
+
+console.log("Product Name:", productName);
+console.log("Product Found:", !!productDoc);
+  if (!productDoc) {
+    throw new Error("Product not found");
+  }
+
+  const data = productDoc.data();
+
+  const stock = Number(data.stock) || 0;
+
+  if (stock < qty) {
+    throw new Error(
+      `Only ${stock} item(s) available in stock`
+    );
+  }
+
+  await productDoc.ref.update({
+    stock: stock - Number(qty),
+  });
+}
 
 
 // ===============================
@@ -107,6 +161,9 @@ router.post("/", verifyToken, async (req, res) => {
 
   try {
 
+    console.log("========= NEW ORDER =========");
+    console.log("Request Body:", req.body);
+
     const {
       customer,
       product,
@@ -114,7 +171,6 @@ router.post("/", verifyToken, async (req, res) => {
       amount,
       status,
     } = req.body;
-
     if (!customer || !product || amount === undefined) {
 
       return res.status(400).json({
@@ -126,46 +182,7 @@ router.post("/", verifyToken, async (req, res) => {
 
     const qty = Number(quantity) || 1;
 
-    // Find Product
-
-    const productSnapshot = await db
-      .collection("products")
-      .where("name", "==", product)
-      .limit(1)
-      .get();
-
-    if (productSnapshot.empty) {
-
-      return res.status(404).json({
-        success: false,
-        message: "Product not found",
-      });
-
-    }
-
-    const productDoc = productSnapshot.docs[0];
-    const productData = productDoc.data();
-
-    const currentStock = Number(productData.stock) || 0;
-
-    if (currentStock < qty) {
-
-      return res.status(400).json({
-        success: false,
-        message: "Not enough stock available",
-      });
-
-    }
-
-    // Reduce Stock
-
-    await db
-      .collection("products")
-      .doc(productDoc.id)
-      .update({
-        stock: currentStock - qty,
-      });
-
+    await decreaseStock(product, qty);
     const order = {
 
       customer,
@@ -209,76 +226,83 @@ router.post("/", verifyToken, async (req, res) => {
 // ===============================
 
 router.put("/:id", verifyToken, async (req, res) => {
-
   try {
+    const docRef = db.collection("orders").doc(req.params.id);
 
-    const docRef = db
-      .collection("orders")
-      .doc(req.params.id);
+    const snapshot = await docRef.get();
 
-    const oldDoc = await docRef.get();
-
-    if (!oldDoc.exists) {
-
+    if (!snapshot.exists) {
       return res.status(404).json({
         success: false,
         message: "Order not found",
       });
-
     }
 
-    const updateData = {};
+    const oldOrder = snapshot.data();
 
-    if (req.body.customer !== undefined)
-      updateData.customer = req.body.customer;
+    const newProduct =
+      req.body.product ?? oldOrder.product;
 
-    if (req.body.product !== undefined)
-      updateData.product = req.body.product;
+    const newQty =
+      Number(req.body.quantity) ||
+      Number(oldOrder.quantity);
 
-    if (req.body.quantity !== undefined)
-      updateData.quantity = Number(req.body.quantity);
+    const oldProduct = oldOrder.product;
 
-    if (req.body.amount !== undefined)
-      updateData.amount = Number(req.body.amount);
+    const oldQty = Number(oldOrder.quantity) || 1;
 
-    if (req.body.status !== undefined)
-      updateData.status = req.body.status;
+    // Restore old stock
 
-    updateData.updatedAt = new Date();
+    await increaseStock(oldProduct, oldQty);
+
+    try {
+      // Deduct new stock
+
+      await decreaseStock(newProduct, newQty);
+    } catch (err) {
+      // rollback
+
+      await decreaseStock(oldProduct, oldQty);
+
+      throw err;
+    }
+
+    const updateData = {
+      ...req.body,
+      quantity: newQty,
+      amount:
+        req.body.amount !== undefined
+          ? Number(req.body.amount)
+          : oldOrder.amount,
+      updatedAt: new Date(),
+    };
 
     await docRef.update(updateData);
 
-    const updatedDoc = await docRef.get();
+    const updated = await docRef.get();
 
     res.json({
       success: true,
       message: "Order updated successfully",
       data: {
-        id: updatedDoc.id,
-        ...updatedDoc.data(),
+        id: updated.id,
+        ...updated.data(),
       },
     });
-
   } catch (error) {
-
     console.error(error);
 
     res.status(500).json({
       success: false,
       message: error.message,
     });
-
   }
-
 });
-
-
 // ===============================
 // DELETE ORDER
 // ===============================
 
 router.delete("/:id", verifyToken, async (req, res) => {
-
   try {
 
     const docRef = db
@@ -288,38 +312,19 @@ router.delete("/:id", verifyToken, async (req, res) => {
     const orderDoc = await docRef.get();
 
     if (!orderDoc.exists) {
-
       return res.status(404).json({
         success: false,
         message: "Order not found",
       });
-
     }
 
     const order = orderDoc.data();
 
-    // Restore stock when deleting an order
-    const productSnapshot = await db
-      .collection("products")
-      .where("name", "==", order.product)
-      .limit(1)
-      .get();
-
-    if (!productSnapshot.empty) {
-
-      const productDoc = productSnapshot.docs[0];
-      const productData = productDoc.data();
-
-      await db
-        .collection("products")
-        .doc(productDoc.id)
-        .update({
-          stock:
-            (Number(productData.stock) || 0) +
-            (Number(order.quantity) || 1),
-        });
-
-    }
+    // Restore stock when deleting the order
+    await increaseStock(
+      order.product,
+      Number(order.quantity) || 1
+    );
 
     await docRef.delete();
 
@@ -338,7 +343,6 @@ router.delete("/:id", verifyToken, async (req, res) => {
     });
 
   }
-
 });
 
 
