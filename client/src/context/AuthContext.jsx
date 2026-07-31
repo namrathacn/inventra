@@ -47,54 +47,84 @@ export function AuthProvider({ children }) {
 
     const unsubscribe = onAuthStateChanged(
       auth,
-      async (currentUser) => {
+      async(currentUser)=>{
 
 
-        if (currentUser) {
+        if(currentUser){
+
+
+          const userRef = doc(
+            db,
+            "users",
+            currentUser.uid
+          );
 
 
           const userSnap = await getDoc(
-            doc(
-              db,
-              "users",
-              currentUser.uid
-            )
+            userRef
           );
 
 
 
-          if (userSnap.exists()) {
+          if(userSnap.exists()){
 
 
-            const profileData = userSnap.data();
+            const profileData =
+              userSnap.data();
 
-
-            console.log(
-              "PROFILE DATA:",
-              profileData
-            );
-            console.log(
-  "ROLE CHECK:",
-  profileData.role
-);
 
 
             setUser({
-  ...profileData,
-  ...currentUser
-});
+
+              ...currentUser,
+
+              ...profileData
+
+            });
 
 
-          } else {
+
+          }
+          else{
 
 
-            setUser(currentUser);
+            const newUser={
+
+              uid:currentUser.uid,
+
+              name:
+                currentUser.displayName ||
+                "User",
+
+              email:
+                currentUser.email,
+
+              role:"admin"
+
+            };
+
+
+            await setDoc(
+              userRef,
+              newUser
+            );
+
+
+            setUser({
+
+              ...currentUser,
+
+              ...newUser
+
+            });
 
 
           }
 
 
-        } else {
+
+        }
+        else{
 
 
           setUser(null);
@@ -119,70 +149,104 @@ export function AuthProvider({ children }) {
 
 
 
+
+
   // GOOGLE LOGIN
 
-  const googleLogin = async () => {
+  const googleLogin = async()=>{
 
 
-    try {
+    try{
 
 
-      const result = await signInWithPopup(
-        auth,
-        googleProvider
-      );
+      const result =
+        await signInWithPopup(
+          auth,
+          googleProvider
+        );
 
 
-      const currentUser = result.user;
-
-
-      const userRef = doc(
-        db,
-        "users",
-        currentUser.uid
-      );
-
-
-      const userSnap = await getDoc(
-        userRef
-      );
+      const currentUser =
+        result.user;
 
 
 
-      if (!userSnap.exists()) {
+      const userRef =
+        doc(
+          db,
+          "users",
+          currentUser.uid
+        );
+
+
+
+      const userSnap =
+        await getDoc(
+          userRef
+        );
+
+
+
+      let profileData;
+
+
+
+      if(!userSnap.exists()){
+
+
+        profileData={
+
+          uid:
+            currentUser.uid,
+
+          name:
+            currentUser.displayName ||
+            "User",
+
+          email:
+            currentUser.email,
+
+          role:"admin"
+
+        };
+
 
 
         await setDoc(
           userRef,
-          {
-
-            uid: currentUser.uid,
-
-            name:
-              currentUser.displayName ||
-              "User",
-
-            email:
-              currentUser.email,
-
-            role:"admin"
-
-          }
+          profileData
         );
+
+
+      }
+      else{
+
+
+        profileData =
+          userSnap.data();
 
 
       }
 
 
 
-      setUser(currentUser);
+
+      setUser({
+
+        ...currentUser,
+
+        ...profileData
+
+      });
+
 
 
       return currentUser;
 
 
 
-    } catch(error) {
+    }
+    catch(error){
 
 
       console.log(
@@ -204,27 +268,15 @@ export function AuthProvider({ children }) {
 
 
 
+
   // LOGOUT
 
   const logout = async()=>{
 
 
-    try{
+    await signOut(auth);
 
-
-      await signOut(auth);
-
-      setUser(null);
-
-
-    }
-    catch(error){
-
-
-      console.log(error);
-
-
-    }
+    setUser(null);
 
 
   };
@@ -240,41 +292,30 @@ export function AuthProvider({ children }) {
   const updateUser = async(newData)=>{
 
 
-    try{
+    if(auth.currentUser){
 
 
-      if(auth.currentUser){
+      await updateProfile(
+        auth.currentUser,
+        newData
+      );
 
 
-        await updateProfile(
-          auth.currentUser,
-          newData
-        );
+      setUser({
 
+        ...user,
 
-        setUser({
+        ...newData
 
-          ...auth.currentUser,
-
-          ...newData
-
-        });
-
-
-      }
-
-
-    }
-    catch(error){
-
-
-      throw error;
+      });
 
 
     }
 
 
   };
+
+
 
 
 
