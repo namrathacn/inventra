@@ -2,29 +2,43 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import {
-  createUserWithEmailAndPassword,
-  GoogleAuthProvider,
-  signInWithPopup,
+createUserWithEmailAndPassword,
+GoogleAuthProvider,
+signInWithPopup
 } from "firebase/auth";
 
+
 import {
-  doc,
-  getDoc,
-  setDoc,
+doc,
+setDoc,
+addDoc,
+collection,
+query,
+where,
+getDocs,
+serverTimestamp
 } from "firebase/firestore";
 
-import { auth, db } from "../../firebase";
 
 import {
-  FiArrowRight,
-  FiLock,
-  FiMail,
-  FiUser,
+auth,
+db
+} from "../../firebase";
+
+
+import {
+FiArrowRight,
+FiLock,
+FiMail,
+FiUser,
+FiBriefcase
 } from "react-icons/fi";
 
-import { motion } from "framer-motion";
+
+import {motion} from "framer-motion";
 
 import toast from "react-hot-toast";
+
 
 import AuthLayout from "../../components/auth/AuthLayout";
 import AuthCard from "../../components/auth/AuthCard";
@@ -32,121 +46,43 @@ import AuthInput from "../../components/auth/AuthInput";
 import GoogleButton from "../../components/auth/GoogleButton";
 
 
-export default function Signup() {
+
+
+export default function Signup(){
+
 
 const navigate = useNavigate();
 
 
+
 const [name,setName]=useState("");
+
 const [email,setEmail]=useState("");
+
 const [password,setPassword]=useState("");
-const [businessPin,setBusinessPin]=useState("");
+
+const [businessName,setBusinessName]=useState("");
+
+const [pin,setPin]=useState("");
+
+const [joinMode,setJoinMode]=useState(false);
+
+
 const [loading,setLoading]=useState(false);
-const [googleLoading,setGoogleLoading]=useState(false);
-
-
-
-const createUserProfile = async(user)=>{
-
-
-const userRef = doc(
-  db,
-  "users",
-  user.uid
-);
-
-
-const snap = await getDoc(userRef);
-
-
-
-if(!snap.exists()){
-
-
-
-const businessId =
-"INV-" +
-Math.random()
-.toString(36)
-.substring(2,8)
-.toUpperCase();
-
-
-
-const pin =
-businessPin ||
-Math.floor(
-1000 + Math.random()*9000
-).toString();
 
 
 
 
-// CREATE BUSINESS
-await setDoc(
-doc(
-db,
-"businesses",
-businessId
-),
-{
-
-name:
-(user.displayName || name) + "'s Store",
-
-pin,
-
-ownerId:
-user.uid,
-
-createdAt:
-new Date()
-
-}
-
-);
 
 
+async function createAccount(e){
 
-
-// CREATE USER
-await setDoc(
-userRef,
-{
-
-uid:user.uid,
-
-name:
-user.displayName || name,
-
-email:user.email,
-
-role:"admin",
-
-businessId,
-
-createdAt:
-new Date()
-
-}
-
-);
-
-
-
-}
-
-
-};
-
-
-
-
-const signup = async(e)=>{
 
 e.preventDefault();
 
+
 setLoading(true);
+
 
 
 try{
@@ -161,53 +97,237 @@ password
 
 
 
-await createUserProfile({
-uid:result.user.uid,
+const user =
+result.user;
+
+
+
+// ==========================
+// STAFF JOIN
+// ==========================
+
+
+if(joinMode){
+
+
+
+const q =
+query(
+
+collection(db,"businesses"),
+
+where(
+"pin",
+"==",
+pin
+)
+
+);
+
+
+
+const snap =
+await getDocs(q);
+
+
+
+if(snap.empty){
+
+throw new Error(
+"Invalid Business PIN"
+);
+
+}
+
+
+
+
+const business =
+snap.docs[0];
+
+
+
+
+await setDoc(
+
+doc(
+db,
+"users",
+user.uid
+),
+
+{
+
+
+uid:user.uid,
+
+
+name,
+
+
 email,
-displayName:name
-});
+
+
+role:"staff",
+
+
+businessId:
+business.id,
+
+
+createdAt:
+serverTimestamp()
+
+
+}
+
+);
 
 
 
 toast.success(
-"Admin account created"
+"Joined business successfully"
 );
+
+
+
+}
+
+
+
+
+// ==========================
+// CREATE BUSINESS
+// ==========================
+
+
+else{
+
+
+const businessRef =
+await addDoc(
+
+collection(
+db,
+"businesses"
+),
+
+{
+
+
+businessName,
+
+
+pin,
+
+
+ownerId:
+user.uid,
+
+
+createdAt:
+serverTimestamp()
+
+
+}
+
+);
+
+
+
+
+
+await setDoc(
+
+doc(
+db,
+"users",
+user.uid
+),
+
+{
+
+
+uid:user.uid,
+
+
+name,
+
+
+email,
+
+
+role:"admin",
+
+
+businessId:
+businessRef.id,
+
+
+createdAt:
+serverTimestamp()
+
+
+}
+
+);
+
+
+
+toast.success(
+"Business created successfully"
+);
+
+
+}
+
+
 
 
 navigate("/dashboard");
 
 
+
 }
 catch(error){
 
+
 console.log(error);
 
+
 toast.error(
-"Signup failed"
+error.message
 );
+
 
 }
 
 
 setLoading(false);
 
-};
+
+}
 
 
 
 
 
-const googleSignup = async()=>{
+
+
+
+
+// GOOGLE SIGNUP
+
+
+async function googleSignup(){
 
 
 try{
 
 
-setGoogleLoading(true);
-
-
 const provider =
 new GoogleAuthProvider();
+
 
 
 const result =
@@ -218,14 +338,71 @@ provider
 
 
 
-await createUserProfile(
-result.user
+const user =
+result.user;
+
+
+
+if(!joinMode){
+
+
+const businessRef =
+await addDoc(
+
+collection(db,"businesses"),
+
+{
+
+
+businessName,
+
+pin,
+
+ownerId:user.uid,
+
+createdAt:
+serverTimestamp()
+
+}
+
 );
 
 
 
+
+await setDoc(
+
+doc(
+db,
+"users",
+user.uid
+),
+
+{
+
+
+uid:user.uid,
+
+name:user.displayName,
+
+email:user.email,
+
+role:"admin",
+
+businessId:
+businessRef.id
+
+}
+
+);
+
+
+}
+
+
+
 toast.success(
-"Google signup successful"
+"Signup successful"
 );
 
 
@@ -238,39 +415,48 @@ catch(error){
 console.log(error);
 
 toast.error(
-"Google signup failed"
+error.message
 );
+
 
 }
 
 
-setGoogleLoading(false);
 
-
-};
-
+}
 
 
 
 
-return (
+
+
+
+
+return(
 
 <AuthLayout>
+
 
 <AuthCard
 
 title="Create Account"
 
-subtitle="Create your Inventra business account."
+subtitle={
+joinMode
+?
+"Join your business workspace"
+:
+"Create your Inventra business"
+}
 
 >
+
+
 
 
 <GoogleButton
 
 onClick={googleSignup}
-
-loading={googleLoading}
 
 text="Continue with Google"
 
@@ -278,47 +464,13 @@ text="Continue with Google"
 
 
 
-<div className="
-flex
-items-center
-gap-3
-my-8
-">
-
-<div className="
-flex-1
-h-px
-bg-white/10
-"/>
-
-
-<span className="
-text-xs
-tracking-widest
-text-slate-500
-">
-OR
-</span>
-
-
-<div className="
-flex-1
-h-px
-bg-white/10
-"/>
-
-
-</div>
 
 
 
-<form
+<div className="space-y-4 mt-8">
 
-onSubmit={signup}
 
-className="space-y-4"
 
->
 
 
 <AuthInput
@@ -335,17 +487,23 @@ setValue={setName}
 
 
 
+
+
+
 <AuthInput
 
 icon={<FiMail/>}
 
-placeholder="Email Address"
+placeholder="Email"
 
 value={email}
 
 setValue={setEmail}
 
 />
+
+
+
 
 
 
@@ -362,12 +520,57 @@ value={password}
 setValue={setPassword}
 
 />
+
+
+
+
+
+
+
+{
+
+!joinMode &&
+
 <AuthInput
-icon={<FiLock/>}
-placeholder="Business PIN"
-value={businessPin}
-setValue={setBusinessPin}
+
+icon={<FiBriefcase/>}
+
+placeholder="Business Name"
+
+value={businessName}
+
+setValue={setBusinessName}
+
 />
+
+}
+
+
+
+
+
+
+
+<AuthInput
+
+icon={<FiLock/>}
+
+placeholder={
+joinMode
+?
+"Business PIN"
+:
+"Create Business PIN"
+}
+
+value={pin}
+
+setValue={setPin}
+
+/>
+
+
+
 
 
 
@@ -375,27 +578,23 @@ setValue={setBusinessPin}
 <motion.button
 
 whileHover={{
-scale:1.015
-}}
-
-whileTap={{
-scale:0.985
+scale:1.02
 }}
 
 disabled={loading}
 
+onClick={createAccount}
+
 className="
-mt-3
 w-full
 rounded-2xl
 bg-gradient-to-r
-from-sky-500
+from-cyan-500
 to-blue-600
 py-4
-font-semibold
 text-white
+font-semibold
 flex
-items-center
 justify-center
 gap-3
 "
@@ -403,12 +602,18 @@ gap-3
 >
 
 
-{loading
+{
+loading
 ?
-"Creating Account..."
+"Creating..."
 :
-"Create Account"
+joinMode
+?
+"Join Business"
+:
+"Create Business"
 }
+
 
 
 <FiArrowRight/>
@@ -419,31 +624,55 @@ gap-3
 
 
 
-<p className="
-mt-8
-text-center
-text-sm
-text-slate-400
-">
 
 
-Already have an account?
 
+<button
 
-<Link
+type="button"
 
-to="/login"
+onClick={()=>setJoinMode(!joinMode)}
 
 className="
-ml-2
-text-sky-400
-font-semibold
+text-cyan-400
+text-sm
+mt-5
 "
 
 >
 
-Login
 
+{
+
+joinMode
+
+?
+
+"Create your own business instead"
+
+:
+
+"Have a Business PIN? Join as Staff"
+
+}
+
+
+
+</button>
+
+
+
+
+
+<p className="text-center text-slate-400 mt-5">
+
+Already have account?
+
+<Link
+to="/login"
+className="text-cyan-400 ml-2"
+>
+Login
 </Link>
 
 
@@ -451,7 +680,7 @@ Login
 
 
 
-</form>
+</div>
 
 
 </AuthCard>
@@ -461,5 +690,6 @@ Login
 
 
 );
+
 
 }

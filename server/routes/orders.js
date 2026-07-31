@@ -5,345 +5,737 @@ const { db } = require("../firebaseAdmin");
 const verifyToken = require("../middleware/authMiddleware");
 
 const router = express.Router();
+
+
+// =======================================
+// GET USER BUSINESS
+// =======================================
+
+async function getUserBusiness(uid){
+
+  const userSnap = await db
+    .collection("users")
+    .doc(uid)
+    .get();
+
+
+  if(!userSnap.exists){
+    throw new Error("User profile not found");
+  }
+
+
+  const userData = userSnap.data();
+
+
+  if(!userData.businessId){
+    throw new Error("No business assigned");
+  }
+
+
+  return userData;
+
+}
+
+
+
 // =======================================
 // PRODUCT HELPERS
 // =======================================
 
-async function findProductByName(productName) {
+async function findProductByName(productName, businessId){
+
   const snapshot = await db
     .collection("products")
-    .where("name", "==", productName)
+    .where("name","==",productName)
+    .where("businessId","==",businessId)
     .limit(1)
     .get();
-    console.log("Searching for product:", productName);
-console.log("Documents found:", snapshot.size);
-    
 
-  if (snapshot.empty) return null;
+
+  if(snapshot.empty)
+    return null;
+
 
   return snapshot.docs[0];
+
 }
 
-async function increaseStock(productName, qty) {
-  const productDoc = await findProductByName(productName);
 
-  if (!productDoc) return;
 
-  const data = productDoc.data();
+async function increaseStock(productName, qty, businessId){
 
-  await productDoc.ref.update({
-    stock: (Number(data.stock) || 0) + Number(qty),
-  });
-}
 
-async function decreaseStock(productName, qty) {
-  const productDoc = await findProductByName(productName);
-
-console.log("Product Name:", productName);
-console.log("Product Found:", !!productDoc);
-  if (!productDoc) {
-    throw new Error("Product not found");
-  }
-
-  const data = productDoc.data();
-
-  const stock = Number(data.stock) || 0;
-
-  if (stock < qty) {
-    throw new Error(
-      `Only ${stock} item(s) available in stock`
+  const productDoc =
+    await findProductByName(
+      productName,
+      businessId
     );
-  }
+
+
+  if(!productDoc)
+    return;
+
+
+
+  const data = productDoc.data();
+
 
   await productDoc.ref.update({
-    stock: stock - Number(qty),
+
+    stock:
+    (Number(data.stock)||0)
+    +
+    Number(qty)
+
   });
+
+
 }
 
 
-// ===============================
-// TEST ROUTE
-// ===============================
 
-router.post("/test", (req, res) => {
-  res.json({
-    success: true,
-    message: "POST orders working",
-    body: req.body,
+
+async function decreaseStock(productName, qty, businessId){
+
+
+  const productDoc =
+    await findProductByName(
+      productName,
+      businessId
+    );
+
+
+  if(!productDoc){
+
+    throw new Error(
+      "Product not found"
+    );
+
+  }
+
+
+
+  const data = productDoc.data();
+
+
+  const stock =
+    Number(data.stock)||0;
+
+
+
+  if(stock < qty){
+
+    throw new Error(
+      `Only ${stock} item(s) available`
+    );
+
+  }
+
+
+
+  await productDoc.ref.update({
+
+    stock:
+    stock -
+    Number(qty)
+
   });
-});
 
 
-// ===============================
+}
+
+
+
+// =======================================
 // GET ALL ORDERS
-// ===============================
+// =======================================
+
 
 router.get("/", verifyToken, async (req, res) => {
   try {
 
+    const userSnap = await db
+      .collection("users")
+      .doc(req.user.uid)
+      .get();
+
+
+    if (!userSnap.exists) {
+      return res.status(404).json({
+        success:false,
+        message:"User profile not found"
+      });
+    }
+
+
+    const userData = userSnap.data();
+
+
     const snapshot = await db
       .collection("orders")
-      .orderBy("createdAt", "desc")
+      .where(
+        "businessId",
+        "==",
+        userData.businessId
+      )
+      .orderBy(
+        "createdAt",
+        "desc"
+      )
       .get();
 
-    const orders = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
+
+
+    const orders = snapshot.docs.map(doc=>({
+
+      id:doc.id,
+      ...doc.data()
+
     }));
 
-    res.status(200).json({
-      success: true,
-      data: orders,
-    });
-
-  } catch (error) {
-
-    console.error(error);
-
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-
-  }
-});
 
 
-// ===============================
-// GET SINGLE ORDER
-// ===============================
-
-router.get("/:id", verifyToken, async (req, res) => {
-
-  try {
-
-    const doc = await db
-      .collection("orders")
-      .doc(req.params.id)
-      .get();
-
-    if (!doc.exists) {
-
-      return res.status(404).json({
-        success: false,
-        message: "Order not found",
-      });
-
-    }
-
-    res.json({
-      success: true,
-      data: {
-        id: doc.id,
-        ...doc.data(),
-      },
-    });
-
-  } catch (error) {
-
-    console.error(error);
-
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-
-  }
-
-});
-
-
-// ===============================
-// ADD ORDER + REDUCE PRODUCT STOCK
-// ===============================
-
-router.post("/", verifyToken, async (req, res) => {
-
-  try {
-
-    console.log("========= NEW ORDER =========");
-    console.log("Request Body:", req.body);
-
-    const {
-      customer,
-      product,
-      quantity,
-      amount,
-      status,
-    } = req.body;
-    if (!customer || !product || amount === undefined) {
-
-      return res.status(400).json({
-        success: false,
-        message: "Customer, product and amount are required",
-      });
-
-    }
-
-    const qty = Number(quantity) || 1;
-
-    await decreaseStock(product, qty);
-    const order = {
-
-      customer,
-      product,
-      quantity: qty,
-      amount: Number(amount),
-      status: status || "Pending",
-
-      createdAt: new Date(),
-
-      createdBy: req.user.uid,
-    };
-
-    const orderRef = await db
-      .collection("orders")
-      .add(order);
-
-    res.status(201).json({
-      success: true,
-      message: "Order created successfully",
-      data: {
-        id: orderRef.id,
-        ...order,
-      },
-    });
-
-  } catch (error) {
-
-    console.error(error);
-
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-
-  }
-
-});
-// ===============================
-// UPDATE ORDER
-// ===============================
-
-router.put("/:id", verifyToken, async (req, res) => {
-  try {
-    const docRef = db.collection("orders").doc(req.params.id);
-
-    const snapshot = await docRef.get();
-
-    if (!snapshot.exists) {
-      return res.status(404).json({
-        success: false,
-        message: "Order not found",
-      });
-    }
-
-    const oldOrder = snapshot.data();
-
-    const newProduct =
-      req.body.product ?? oldOrder.product;
-
-    const newQty =
-      Number(req.body.quantity) ||
-      Number(oldOrder.quantity);
-
-    const oldProduct = oldOrder.product;
-
-    const oldQty = Number(oldOrder.quantity) || 1;
-
-    // Restore old stock
-
-    await increaseStock(oldProduct, oldQty);
-
-    try {
-      // Deduct new stock
-
-      await decreaseStock(newProduct, newQty);
-    } catch (err) {
-      // rollback
-
-      await decreaseStock(oldProduct, oldQty);
-
-      throw err;
-    }
-
-    const updateData = {
-      ...req.body,
-      quantity: newQty,
-      amount:
-        req.body.amount !== undefined
-          ? Number(req.body.amount)
-          : oldOrder.amount,
-      updatedAt: new Date(),
-    };
-
-    await docRef.update(updateData);
-
-    const updated = await docRef.get();
-
-    res.json({
-      success: true,
-      message: "Order updated successfully",
-      data: {
-        id: updated.id,
-        ...updated.data(),
-      },
-    });
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-});
-// ===============================
-// DELETE ORDER
-// ===============================
-
-router.delete("/:id", verifyToken, async (req, res) => {
-  try {
-
-    const docRef = db
-      .collection("orders")
-      .doc(req.params.id);
-
-    const orderDoc = await docRef.get();
-
-    if (!orderDoc.exists) {
-      return res.status(404).json({
-        success: false,
-        message: "Order not found",
-      });
-    }
-
-    const order = orderDoc.data();
-
-    // Restore stock when deleting the order
-    await increaseStock(
-      order.product,
-      Number(order.quantity) || 1
+    console.log(
+      "ORDER BUSINESS:",
+      userData.businessId
     );
 
-    await docRef.delete();
+
+    console.log(
+      "ORDERS FOUND:",
+      orders.length
+    );
+
+
 
     res.json({
-      success: true,
-      message: "Order deleted successfully",
+
+      success:true,
+      data:orders
+
     });
 
-  } catch (error) {
+
+  } catch(error){
 
     console.error(error);
 
+
     res.status(500).json({
-      success: false,
-      message: error.message,
+
+      success:false,
+      message:error.message
+
     });
 
+
   }
+
 });
+
+
+// =======================================
+// GET SINGLE ORDER
+// =======================================
+
+
+router.get("/:id",verifyToken,async(req,res)=>{
+
+
+try{
+
+
+const userData =
+await getUserBusiness(
+req.user.uid
+);
+
+
+
+const doc =
+await db
+.collection("orders")
+.doc(req.params.id)
+.get();
+
+
+
+if(!doc.exists){
+
+return res.status(404).json({
+
+success:false,
+
+message:"Order not found"
+
+});
+
+}
+
+
+
+const order =
+doc.data();
+
+
+
+if(order.businessId !== userData.businessId){
+
+return res.status(403).json({
+
+success:false,
+
+message:"Unauthorized"
+
+});
+
+}
+
+
+
+res.json({
+
+success:true,
+
+data:{
+
+id:doc.id,
+
+...order
+
+}
+
+});
+
+
+
+}
+catch(error){
+
+console.error(error);
+
+
+res.status(500).json({
+
+success:false,
+
+message:error.message
+
+});
+
+}
+
+
+});
+
+
+
+
+// =======================================
+// ADD ORDER
+// =======================================
+
+
+router.post("/",verifyToken,async(req,res)=>{
+
+
+try{
+
+
+const userData =
+await getUserBusiness(
+req.user.uid
+);
+
+
+
+const {
+
+customer,
+
+product,
+
+quantity,
+
+amount,
+
+status
+
+}=req.body;
+
+
+
+if(
+!customer ||
+!product ||
+amount===undefined
+){
+
+return res.status(400).json({
+
+success:false,
+
+message:"Customer product amount required"
+
+});
+
+}
+
+
+
+
+const qty =
+Number(quantity)||1;
+
+
+
+
+await decreaseStock(
+product,
+qty,
+userData.businessId
+);
+
+
+
+
+const order = {
+
+
+customer,
+
+product,
+
+quantity:qty,
+
+amount:Number(amount),
+
+status:
+status || "Pending",
+
+
+businessId:userData.businessId,
+
+
+createdAt:
+new Date(),
+
+
+createdBy:
+req.user.uid
+
+
+};
+
+
+
+
+const orderRef =
+await db
+.collection("orders")
+.add(order);
+
+
+
+res.status(201).json({
+
+success:true,
+
+message:"Order created",
+
+data:{
+
+id:orderRef.id,
+
+...order
+
+}
+
+});
+
+
+
+}
+catch(error){
+
+console.error(error);
+
+
+res.status(500).json({
+
+success:false,
+
+message:error.message
+
+});
+
+
+}
+
+
+});
+
+
+
+
+// =======================================
+// UPDATE ORDER
+// =======================================
+
+
+router.put("/:id",verifyToken,async(req,res)=>{
+
+
+try{
+
+
+const userData =
+await getUserBusiness(
+req.user.uid
+);
+
+
+
+const docRef =
+db.collection("orders")
+.doc(req.params.id);
+
+
+
+const snapshot =
+await docRef.get();
+
+
+
+if(!snapshot.exists){
+
+return res.status(404).json({
+
+success:false,
+
+message:"Order not found"
+
+});
+
+}
+
+
+
+
+const oldOrder =
+snapshot.data();
+
+
+
+if(
+oldOrder.businessId !== userData.businessId
+){
+
+return res.status(403).json({
+
+success:false,
+
+message:"Unauthorized"
+
+});
+
+}
+
+
+
+
+const newProduct =
+req.body.product ??
+oldOrder.product;
+
+
+
+const newQty =
+Number(req.body.quantity)
+||
+Number(oldOrder.quantity);
+
+
+
+await increaseStock(
+oldOrder.product,
+Number(oldOrder.quantity),
+userData.businessId
+);
+
+
+
+await decreaseStock(
+newProduct,
+newQty,
+userData.businessId
+);
+
+
+
+
+await docRef.update({
+
+...req.body,
+
+quantity:newQty,
+
+amount:
+req.body.amount!==undefined
+?
+Number(req.body.amount)
+:
+oldOrder.amount,
+
+
+updatedAt:new Date()
+
+});
+
+
+
+res.json({
+
+success:true,
+
+message:"Order updated"
+
+});
+
+
+}
+catch(error){
+
+console.error(error);
+
+
+res.status(500).json({
+
+success:false,
+
+message:error.message
+
+});
+
+
+}
+
+
+});
+
+
+
+
+// =======================================
+// DELETE ORDER
+// =======================================
+
+
+router.delete("/:id",verifyToken,async(req,res)=>{
+
+
+try{
+
+
+const userData =
+await getUserBusiness(
+req.user.uid
+);
+
+
+
+const docRef =
+db.collection("orders")
+.doc(req.params.id);
+
+
+
+const orderDoc =
+await docRef.get();
+
+
+
+if(!orderDoc.exists){
+
+return res.status(404).json({
+
+success:false,
+
+message:"Order not found"
+
+});
+
+}
+
+
+
+
+const order =
+orderDoc.data();
+
+
+
+if(order.businessId !== userData.businessId){
+
+return res.status(403).json({
+
+success:false,
+
+message:"Unauthorized"
+
+});
+
+}
+
+
+
+
+await increaseStock(
+
+order.product,
+
+Number(order.quantity),
+
+userData.businessId
+
+);
+
+
+
+await docRef.delete();
+
+
+
+res.json({
+
+success:true,
+
+message:"Order deleted"
+
+});
+
+
+}
+catch(error){
+
+console.error(error);
+
+
+res.status(500).json({
+
+success:false,
+
+message:error.message
+
+});
+
+
+}
+
+
+});
+
+
 
 
 module.exports = router;

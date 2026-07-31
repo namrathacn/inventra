@@ -8,7 +8,6 @@ import {
 
 import {
   onAuthStateChanged,
-  updateProfile,
   signInWithPopup,
   signOut
 } from "firebase/auth";
@@ -17,7 +16,13 @@ import {
 import {
   doc,
   getDoc,
-  setDoc
+  setDoc,
+  addDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  serverTimestamp
 } from "firebase/firestore";
 
 
@@ -33,320 +38,441 @@ const AuthContext = createContext();
 
 
 
-export function AuthProvider({ children }) {
+export function AuthProvider({children}){
 
 
-  const [user, setUser] = useState(null);
+const [user,setUser]=useState(null);
 
-  const [loading, setLoading] = useState(true);
+const [loading,setLoading]=useState(true);
 
 
 
-  useEffect(() => {
 
 
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      async(currentUser)=>{
+useEffect(()=>{
 
 
-        if(currentUser){
+const unsubscribe = onAuthStateChanged(
+auth,
+async(currentUser)=>{
 
 
-          const userRef = doc(
-            db,
-            "users",
-            currentUser.uid
-          );
+if(currentUser){
 
 
-          const userSnap = await getDoc(
-            userRef
-          );
+const userRef =
+doc(
+db,
+"users",
+currentUser.uid
+);
 
 
+const snap =
+await getDoc(userRef);
 
-          if(userSnap.exists()){
 
 
-            const profileData =
-              userSnap.data();
+if(snap.exists()){
 
 
+setUser({
 
-            setUser({
+...currentUser,
 
-              ...currentUser,
+...snap.data()
 
-              ...profileData
+});
 
-            });
 
+}
+else{
 
 
-          }
-          else{
+setUser(currentUser);
 
 
-            const newUser={
+}
 
-              uid:currentUser.uid,
 
-              name:
-                currentUser.displayName ||
-                "User",
+}
+else{
 
-              email:
-                currentUser.email,
 
-              role:"admin"
+setUser(null);
 
-            };
 
+}
 
-            await setDoc(
-              userRef,
-              newUser
-            );
 
+setLoading(false);
 
-            setUser({
 
-              ...currentUser,
+});
 
-              ...newUser
 
-            });
+return unsubscribe;
 
 
-          }
+},[]);
 
 
 
-        }
-        else{
 
 
-          setUser(null);
 
 
-        }
+// GOOGLE LOGIN
 
 
-        setLoading(false);
+const googleLogin = async()=>{
 
 
-      }
-    );
+const result =
+await signInWithPopup(
+auth,
+googleProvider
+);
 
 
-    return unsubscribe;
+const currentUser =
+result.user;
 
 
-  }, []);
 
+const userRef =
+doc(
+db,
+"users",
+currentUser.uid
+);
 
 
 
+const snap =
+await getDoc(userRef);
 
 
 
-  // GOOGLE LOGIN
+if(!snap.exists()){
 
-  const googleLogin = async()=>{
 
+await setDoc(
+userRef,
+{
 
-    try{
 
+uid:
+currentUser.uid,
 
-      const result =
-        await signInWithPopup(
-          auth,
-          googleProvider
-        );
 
+name:
+currentUser.displayName,
 
-      const currentUser =
-        result.user;
 
+email:
+currentUser.email,
 
 
-      const userRef =
-        doc(
-          db,
-          "users",
-          currentUser.uid
-        );
+role:
+"new"
 
 
 
-      const userSnap =
-        await getDoc(
-          userRef
-        );
+}
+);
 
 
+}
 
-      let profileData;
 
 
+return currentUser;
 
-      if(!userSnap.exists()){
 
+};
 
-        profileData={
 
-          uid:
-            currentUser.uid,
 
-          name:
-            currentUser.displayName ||
-            "User",
 
-          email:
-            currentUser.email,
 
-          role:"admin"
 
-        };
 
 
 
-        await setDoc(
-          userRef,
-          profileData
-        );
+// CREATE BUSINESS
 
 
-      }
-      else{
+const createBusiness = async(data)=>{
 
 
-        profileData =
-          userSnap.data();
+const {
 
+businessName,
 
-      }
+pin
 
+}=data;
 
 
 
-      setUser({
+const businessRef =
+await addDoc(
+collection(db,"businesses"),
+{
 
-        ...currentUser,
 
-        ...profileData
+businessName,
 
-      });
 
+pin,
 
 
-      return currentUser;
+ownerId:
+auth.currentUser.uid,
 
 
+createdAt:
+serverTimestamp()
 
-    }
-    catch(error){
 
+}
+);
 
-      console.log(
-        "Google Login Error:",
-        error
-      );
 
 
-      throw error;
 
 
-    }
+await setDoc(
 
+doc(
+db,
+"users",
+auth.currentUser.uid
+),
 
-  };
+{
 
 
+uid:
+auth.currentUser.uid,
 
 
+name:
+auth.currentUser.displayName,
 
 
+email:
+auth.currentUser.email,
 
-  // LOGOUT
 
-  const logout = async()=>{
+role:
+"admin",
 
 
-    await signOut(auth);
+businessId:
+businessRef.id
 
-    setUser(null);
 
+}
 
-  };
 
+);
 
 
 
+setUser({
 
+...auth.currentUser,
 
 
-  // UPDATE PROFILE
+role:"admin",
 
-  const updateUser = async(newData)=>{
 
+businessId:
+businessRef.id
 
-    if(auth.currentUser){
 
+});
 
-      await updateProfile(
-        auth.currentUser,
-        newData
-      );
 
 
-      setUser({
+};
 
-        ...user,
 
-        ...newData
 
-      });
 
 
-    }
 
 
-  };
 
 
+// JOIN BUSINESS STAFF
 
 
+const joinBusiness = async(data)=>{
 
 
+const {
 
+pin
 
-  return (
+}=data;
 
-    <AuthContext.Provider
 
-      value={{
 
-        user,
 
-        loading,
 
-        googleLogin,
+const q =
+query(
 
-        logout,
+collection(db,"businesses"),
 
-        updateUser
+where(
+"pin",
+"==",
+pin
+)
 
-      }}
+);
 
-    >
 
-      {children}
 
-    </AuthContext.Provider>
+const result =
+await getDocs(q);
 
-  );
+
+
+if(result.empty){
+
+throw new Error(
+"Invalid Business PIN"
+);
+
+}
+
+
+
+
+const business =
+result.docs[0];
+
+
+
+
+
+
+await setDoc(
+
+doc(
+db,
+"users",
+auth.currentUser.uid
+),
+
+{
+
+
+uid:
+auth.currentUser.uid,
+
+
+name:
+auth.currentUser.displayName,
+
+
+email:
+auth.currentUser.email,
+
+
+role:
+"staff",
+
+
+businessId:
+business.id
+
+
+}
+
+
+);
+
+
+
+
+setUser({
+
+...auth.currentUser,
+
+
+role:"staff",
+
+
+businessId:
+business.id
+
+
+});
+
+
+
+};
+
+
+
+
+
+
+
+
+
+const logout = async()=>{
+
+await signOut(auth);
+
+setUser(null);
+
+};
+
+
+
+
+
+
+
+
+return(
+
+<AuthContext.Provider
+
+value={{
+
+user,
+
+loading,
+
+googleLogin,
+
+createBusiness,
+
+joinBusiness,
+
+logout
+
+
+}}
+
+>
+
+
+{children}
+
+
+</AuthContext.Provider>
+
+
+);
 
 
 }
@@ -359,6 +485,6 @@ export function AuthProvider({ children }) {
 
 export function useAuth(){
 
-  return useContext(AuthContext);
+return useContext(AuthContext);
 
 }

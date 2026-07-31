@@ -8,114 +8,178 @@ const router = express.Router();
 
 
 // ===============================
-// TEST ROUTES
-// ===============================
-
-router.get("/test", (req, res) => {
-  res.json({
-    success: true,
-    message: "GET test working",
-  });
-});
-
-
-router.post("/test", (req, res) => {
-  res.json({
-    success: true,
-    message: "POST test working",
-    body: req.body,
-  });
-});
-
-
-// ===============================
 // GET ALL PRODUCTS
 // ===============================
 
-router.get("/", verifyToken, async (req, res) => {
+router.get("/", verifyToken, async (req,res)=>{
 
-  try {
+try{
 
-    const snapshot = await db
-      .collection("products")
-      .get();
+console.log("USER UID:", req.user.uid);
 
 
-    const products = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+
+const userSnap = await db
+.collection("users")
+.doc(req.user.uid)
+.get();
 
 
-    res.status(200).json({
-      success: true,
-      data: products,
-    });
+
+if(!userSnap.exists){
+
+return res.status(404).json({
+success:false,
+message:"User profile not found"
+});
+
+}
 
 
-  } catch (error) {
 
-    console.error(error);
+const userData = userSnap.data();
 
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
 
-  }
+
+console.log(
+"BUSINESS ID:",
+userData.businessId
+);
+
+
+
+if(!userData.businessId){
+
+return res.status(400).json({
+success:false,
+message:"No business assigned"
+});
+
+}
+
+
+
+const snapshot = await db
+.collection("products")
+.where(
+"businessId",
+"==",
+userData.businessId
+)
+.get();
+
+
+
+const products = snapshot.docs.map(doc=>({
+
+id:doc.id,
+
+...doc.data()
+
+}));
+
+
+
+console.log(
+"PRODUCTS FOUND:",
+products.length
+);
+
+
+
+res.json({
+
+success:true,
+
+data:products
 
 });
 
+
+}
+catch(error){
+
+console.error(error);
+
+
+res.status(500).json({
+
+success:false,
+
+message:error.message
+
+});
+
+
+}
+
+
+});
 
 
 // ===============================
 // GET SINGLE PRODUCT
 // ===============================
 
-router.get("/:id", verifyToken, async (req, res) => {
-
-  try {
-
-    const doc = await db
-      .collection("products")
-      .doc(req.params.id)
-      .get();
+router.get("/:id", verifyToken, async(req,res)=>{
 
 
-    if (!doc.exists) {
-
-      return res.status(404).json({
-        success: false,
-        message: "Product not found",
-      });
-
-    }
+try{
 
 
-    res.json({
-
-      success: true,
-
-      data: {
-        id: doc.id,
-        ...doc.data(),
-      },
-
-    });
+const doc = await db
+.collection("products")
+.doc(req.params.id)
+.get();
 
 
-  } catch (error) {
 
-    console.error(error);
+if(!doc.exists){
 
-    res.status(500).json({
-      success:false,
-      message:error.message,
-    });
+return res.status(404).json({
 
-  }
+success:false,
+message:"Product not found"
 
 });
+
+}
+
+
+
+res.json({
+
+success:true,
+
+data:{
+id:doc.id,
+...doc.data()
+}
+
+});
+
+
+
+}
+catch(error){
+
+console.error(error);
+
+
+res.status(500).json({
+
+success:false,
+message:error.message
+
+});
+
+
+}
+
+
+
+});
+
 
 
 
@@ -123,90 +187,129 @@ router.get("/:id", verifyToken, async (req, res) => {
 // ADD PRODUCT
 // ===============================
 
-router.post("/", verifyToken, async (req, res) => {
-
-  try {
-
-    const {
-      name,
-      category,
-      price,
-      stock,
-    } = req.body;
+router.post("/", verifyToken, async(req,res)=>{
 
 
+try{
 
-    if (!name || !category) {
 
-      return res.status(400).json({
-
-        success:false,
-
-        message:"Name and category are required",
-
-      });
-
-    }
+const {
+name,
+category,
+price,
+stock
+}=req.body;
 
 
 
-    const product = {
+if(!name || !category){
 
+return res.status(400).json({
 
-      name,
-
-      category,
-
-      price:Number(price) || 0,
-
-      stock:Number(stock) || 0,
-
-
-      createdAt:new Date(),
-
-      createdBy:req.user.uid,
-
-    };
-
-
-
-    const doc = await db
-      .collection("products")
-      .add(product);
-
-
-
-    res.status(201).json({
-
-      success:true,
-
-      message:"Product added successfully",
-
-      data:{
-        id:doc.id,
-        ...product,
-      },
-
-    });
-
-
-
-  } catch(error){
-
-    console.error(error);
-
-
-    res.status(500).json({
-
-      success:false,
-
-      message:error.message,
-
-    });
-
-  }
+success:false,
+message:"Name and category required"
 
 });
+
+}
+
+
+
+// GET USER BUSINESS
+
+const userSnap = await db
+.collection("users")
+.doc(req.user.uid)
+.get();
+
+
+
+if(!userSnap.exists){
+
+return res.status(404).json({
+
+success:false,
+message:"User profile missing"
+
+});
+
+}
+
+
+
+const userData = userSnap.data();
+
+
+
+const product = {
+
+
+name,
+
+category,
+
+price:Number(price)||0,
+
+stock:Number(stock)||0,
+
+
+businessId:
+userData.businessId,
+
+
+createdBy:
+req.user.uid,
+
+
+createdAt:
+new Date()
+
+};
+
+
+
+const doc = await db
+.collection("products")
+.add(product);
+
+
+
+res.status(201).json({
+
+success:true,
+
+message:"Product added",
+
+data:{
+id:doc.id,
+...product
+}
+
+});
+
+
+
+}
+catch(error){
+
+console.error(error);
+
+
+res.status(500).json({
+
+success:false,
+message:error.message
+
+});
+
+
+}
+
+
+
+});
+
+
 
 
 
@@ -214,61 +317,58 @@ router.post("/", verifyToken, async (req, res) => {
 // UPDATE PRODUCT
 // ===============================
 
-router.put("/:id", verifyToken, async (req,res)=>{
+router.put("/:id", verifyToken, async(req,res)=>{
 
 
-  try {
+try{
 
 
-    await db
-      .collection("products")
-      .doc(req.params.id)
-      .update(req.body);
-
-
-
-    const updated = await db
-      .collection("products")
-      .doc(req.params.id)
-      .get();
+await db
+.collection("products")
+.doc(req.params.id)
+.update(req.body);
 
 
 
-    res.json({
-
-      success:true,
-
-      message:"Product updated successfully",
-
-      data:{
-        id:updated.id,
-        ...updated.data(),
-      },
-
-
-    });
+const updated = await db
+.collection("products")
+.doc(req.params.id)
+.get();
 
 
 
-  } catch(error){
+res.json({
+
+success:true,
+
+data:{
+id:updated.id,
+...updated.data()
+}
+
+});
 
 
-    console.error(error);
+
+}
+catch(error){
+
+console.error(error);
 
 
-    res.status(500).json({
+res.status(500).json({
 
-      success:false,
+success:false,
+message:error.message
 
-      message:error.message,
+});
 
-    });
-
-
-  }
+}
 
 
 });
+
+
 
 
 
@@ -276,48 +376,50 @@ router.put("/:id", verifyToken, async (req,res)=>{
 // DELETE PRODUCT
 // ===============================
 
+
 router.delete("/:id", verifyToken, async(req,res)=>{
 
 
-  try {
+try{
 
 
-    await db
-      .collection("products")
-      .doc(req.params.id)
-      .delete();
-
-
-
-    res.json({
-
-      success:true,
-
-      message:"Product deleted successfully",
-
-    });
+await db
+.collection("products")
+.doc(req.params.id)
+.delete();
 
 
 
-  } catch(error){
+res.json({
+
+success:true,
+
+message:"Product deleted"
+
+});
 
 
-    console.error(error);
+
+}
+catch(error){
+
+console.error(error);
 
 
-    res.status(500).json({
+res.status(500).json({
 
-      success:false,
+success:false,
+message:error.message
 
-      message:error.message,
-
-    });
+});
 
 
-  }
+}
+
 
 
 });
+
 
 
 
