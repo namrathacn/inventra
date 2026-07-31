@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import DashboardLayout from "../../layouts/DashboardLayout";
 
@@ -12,49 +12,95 @@ import {
   FiCheckCircle
 } from "react-icons/fi";
 
+import {
+  collection,
+  getDocs
+} from "firebase/firestore";
 
+import { db } from "../../firebase";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Database(){
 
 
 const navigate = useNavigate();
 
+const { user } = useAuth();
 
-const [backup,setBackup] = useState(false);
+const [backup, setBackup] = useState(false);
 
-
-
-const stats=[
-
-{
-title:"Products",
-value:"245",
-description:"Total inventory items",
-icon:<FiDatabase/>
-},
+const [stats, setStats] = useState({
+  products: 0,
+  orders: 0,
+  staff: 0
+});
 
 
-{
-title:"Orders",
-value:"580",
-description:"Total customer orders",
-icon:<FiServer/>
-},
 
 
-{
-title:"Sales Records",
-value:"1200",
-description:"Stored transactions",
-icon:<FiHardDrive/>
-}
-
+const cards = [
+  {
+    title: "Products",
+    value: stats.products,
+    description: "Total inventory items",
+    icon: <FiDatabase />
+  },
+  {
+    title: "Orders",
+    value: stats.orders,
+    description: "Total customer orders",
+    icon: <FiServer />
+  },
+  {
+    title: "Staff",
+    value: stats.staff,
+    description: "Registered staff members",
+    icon: <FiHardDrive />
+  }
 ];
+useEffect(() => {
+  if (!user?.businessId) return;
 
+  loadStats();
+}, [user]);
 
+async function loadStats() {
+  try {
+    const productsSnap = await getDocs(
+      collection(db, "products")
+    );
 
+    const ordersSnap = await getDocs(
+      collection(db, "orders")
+    );
 
+    const staffSnap = await getDocs(
+      collection(
+        db,
+        "businesses",
+        user.businessId,
+        "staff"
+      )
+    );
 
+    const products = productsSnap.docs.filter(
+      (doc) => doc.data().businessId === user.businessId
+    );
+
+    const orders = ordersSnap.docs.filter(
+      (doc) => doc.data().businessId === user.businessId
+    );
+
+    setStats({
+      products: products.length,
+      orders: orders.length,
+      staff: staffSnap.size
+    });
+
+  } catch (error) {
+    console.log("DATABASE ERROR:", error);
+  }
+}
 function createBackup(){
 
 setBackup(true);
@@ -234,7 +280,7 @@ mt-8
 
 {
 
-stats.map((item,index)=>(
+cards.map((item,index)=>(
 
 
 <div

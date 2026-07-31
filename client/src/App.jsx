@@ -7,14 +7,14 @@ import { AuthProvider } from "./context/AuthContext";
 import { CurrencyProvider } from "./context/CurrencyContext";
 import { SearchProvider } from "./context/SearchContext";
 import { DataProvider } from "./context/DataContext";
-
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 
 import Home from "./pages/home/Home";
 
 import Login from "./pages/Login/Login";
 import Signup from "./pages/Signup/Signup";
-
+import StaffSignup from "./pages/Signup/StaffSignup";
 
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Products from "./pages/Products/Products";
@@ -91,6 +91,13 @@ path="/signup"
 element={<Signup/>}
 
 />
+<Route
+
+path="/staff-signup"
+
+element={<StaffSignup/>}
+
+/>
 
 
 
@@ -130,11 +137,12 @@ element={<Orders/>}
 
 
 <Route
-
 path="/settings"
-
-element={<Settings/>}
-
+element={
+<ProtectedRoute adminOnly={true}>
+  <Settings/>
+</ProtectedRoute>
+}
 />
 
 
@@ -163,11 +171,12 @@ element={<Reports/>}
 
 
 <Route
-
 path="/staff"
-
-element={<Staff/>}
-
+element={
+<ProtectedRoute adminOnly={true}>
+  <Staff/>
+</ProtectedRoute>
+}
 />
 
 

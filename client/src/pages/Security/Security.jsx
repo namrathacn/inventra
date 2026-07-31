@@ -1,3 +1,5 @@
+import { updatePassword } from "firebase/auth";
+import { auth } from "../../firebase";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -24,7 +26,7 @@ const [twoFactor,setTwoFactor] = useState(false);
 
 
 const [passwordChanged,setPasswordChanged] = useState(false);
-
+const [newPassword, setNewPassword] = useState("");
 
 
 const securityOptions=[
@@ -272,8 +274,20 @@ mb-5
 
 onClick={()=>{
 
-if(item.title==="Password Management")
-setPasswordChanged(true)
+async function changePassword() {
+  if (newPassword.length < 6) {
+    alert("Password must be at least 6 characters");
+    return;
+  }
+
+  try {
+    await updatePassword(auth.currentUser, newPassword);
+    alert("Password updated successfully");
+    setNewPassword("");
+  } catch (err) {
+    alert(err.message);
+  }
+}
 
 }}
 

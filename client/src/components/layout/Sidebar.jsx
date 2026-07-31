@@ -9,49 +9,13 @@ import {
   FiLogOut,
   FiPackage,
   FiChevronRight,
+  FiBarChart,
 } from "react-icons/fi";
 
 import { NavLink, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 
-const menuItems = [
-  {
-    name: "Dashboard",
-    path: "/dashboard",
-    icon: FiHome,
-  },
-  {
-    name: "Products",
-    path: "/products",
-    icon: FiBox,
-  },
-  {
-    name: "Orders",
-    path: "/orders",
-    icon: FiShoppingCart,
-  },
-  {
-    name: "Reports",
-    path: "/reports",
-    icon: FiBarChart2,
-  },
-  {
-    name: "Staff",
-    path: "/staff",
-    icon: FiUsers,
-  },
-  {
-    name: "Profile",
-    path: "/profile",
-    icon: FiUser,
-  },
-  {
-    name: "Settings",
-    path: "/settings",
-    icon: FiSettings,
-  },
-];
 
 const container = {
   hidden: {},
@@ -77,9 +41,56 @@ const item = {
 };
 
 export default function Sidebar() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
 
+ const { user, logout } = useAuth();
+const navigate = useNavigate();
+
+
+const menuItems = [
+
+    {
+      name:"Dashboard",
+      path:"/dashboard",
+      icon: FiHome
+    },
+
+    {
+      name:"Products",
+      path:"/products",
+      icon:FiPackage
+    },
+
+    {
+      name:"Orders",
+      path:"/orders",
+      icon:FiShoppingCart
+    },
+
+    {
+      name:"Reports",
+      path:"/reports",
+      icon:FiBarChart
+    },
+
+
+   ...(user?.role === "admin"
+?
+[
+{
+  name:"Staff",
+  path:"/staff",
+  icon:FiUsers
+},
+{
+  name:"Settings",
+  path:"/settings",
+  icon:FiSettings
+}
+]
+:
+[])
+  ];
+console.log("MENU ITEMS:", menuItems);
   return (
     <motion.aside
       initial={{
@@ -214,17 +225,18 @@ export default function Sidebar() {
         {/* Navigation */}
 
         <motion.nav
-          variants={container}
-          initial="hidden"
-          animate="show"
-          className="
+  variants={container}
+  initial="hidden"
+  animate="show"
+  className="
   flex-1
   overflow-y-auto
   px-4
   space-y-2
-  pb-4
+  pb-6
+  mb-2
 "
-        >
+>
                     {menuItems.map((menu) => {
             const Icon = menu.icon;
 
@@ -325,7 +337,7 @@ export default function Sidebar() {
 
         {/* User Card */}
 
-       <div className="px-4 pb-3 mt-auto">
+       <div className="px-4 pb-4">
           <motion.div
             initial={{
               opacity: 0,
@@ -394,7 +406,7 @@ export default function Sidebar() {
   <div className="min-w-0 flex-1">
 
     <p className="truncate text-[13px] font-semibold text-white">
-      {user?.displayName || "Admin"}
+      {user?.name || user?.displayName || "User"}
     </p>
 
     <p className="truncate text-[10px] text-slate-400">
@@ -423,7 +435,9 @@ export default function Sidebar() {
     text-cyan-300
   "
 >
-  Store Manager
+  {user?.role === "admin"
+  ? "Administrator"
+  : "Staff Member"}
 </div>
 
             <motion.button

@@ -15,8 +15,16 @@ import {
 
 
 import {
+  doc,
+  getDoc,
+  setDoc
+} from "firebase/firestore";
+
+
+import {
   auth,
-  googleProvider
+  googleProvider,
+  db
 } from "../firebase";
 
 
@@ -25,207 +33,279 @@ const AuthContext = createContext();
 
 
 
+export function AuthProvider({ children }) {
 
-export function AuthProvider({children}){
 
+  const [user, setUser] = useState(null);
 
-const [user,setUser] = useState(null);
-
-const [loading,setLoading] = useState(true);
-
+  const [loading, setLoading] = useState(true);
 
 
 
-
-useEffect(()=>{
-
-
-const unsubscribe =
-onAuthStateChanged(
-auth,
-(currentUser)=>{
+  useEffect(() => {
 
 
-setUser(currentUser);
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      async (currentUser) => {
 
-setLoading(false);
+
+        if (currentUser) {
 
 
+          const userSnap = await getDoc(
+            doc(
+              db,
+              "users",
+              currentUser.uid
+            )
+          );
+
+
+
+          if (userSnap.exists()) {
+
+
+            const profileData = userSnap.data();
+
+
+            console.log(
+              "PROFILE DATA:",
+              profileData
+            );
+            console.log(
+  "ROLE CHECK:",
+  profileData.role
+);
+
+
+            setUser({
+  ...profileData,
+  ...currentUser
 });
 
 
-return unsubscribe;
+          } else {
 
 
-},[]);
+            setUser(currentUser);
 
 
+          }
 
 
+        } else {
 
 
+          setUser(null);
 
-// GOOGLE LOGIN
 
-const googleLogin = async () => {
-  try {
-    console.log("1. Opening Google popup");
+        }
 
-    const result = await signInWithPopup(auth, googleProvider);
 
-    console.log("2. Google login successful");
+        setLoading(false);
 
-    const user = result.user;
 
-    const token = await user.getIdToken();
-
-    console.log("3. Token received");
-
-    console.log("API URL:", import.meta.env.VITE_API_URL);
-
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/users/login`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
       }
     );
 
-    console.log("4. Response Status:", response.status);
 
-    const data = await response.json();
+    return unsubscribe;
 
-    console.log("5. Response:", data);
 
-    setUser(user);
+  }, []);
 
-    return user;
-  } catch (error) {
-    console.error("GOOGLE LOGIN ERROR:", error);
-    throw error;
-  }
-};
 
-// LOGOUT
 
-const logout = async()=>{
 
 
-try{
+  // GOOGLE LOGIN
 
+  const googleLogin = async () => {
 
-await signOut(auth);
 
-setUser(null);
+    try {
 
 
-}
+      const result = await signInWithPopup(
+        auth,
+        googleProvider
+      );
 
-catch(error){
 
+      const currentUser = result.user;
 
-console.log(error);
 
+      const userRef = doc(
+        db,
+        "users",
+        currentUser.uid
+      );
 
-}
 
+      const userSnap = await getDoc(
+        userRef
+      );
 
-};
 
 
+      if (!userSnap.exists()) {
 
 
+        await setDoc(
+          userRef,
+          {
 
+            uid: currentUser.uid,
 
+            name:
+              currentUser.displayName ||
+              "User",
 
+            email:
+              currentUser.email,
 
+            role:"admin"
 
-// UPDATE PROFILE
+          }
+        );
 
-const updateUser = async(newData)=>{
 
+      }
 
-try{
 
 
-if(auth.currentUser){
+      setUser(currentUser);
 
 
-await updateProfile(
-auth.currentUser,
-newData
-);
+      return currentUser;
 
 
 
-setUser({
+    } catch(error) {
 
-...auth.currentUser,
 
-...newData
+      console.log(
+        "Google Login Error:",
+        error
+      );
 
-});
 
+      throw error;
 
-}
 
+    }
 
-}
 
-catch(error){
+  };
 
 
-throw error;
 
 
-}
 
 
-};
+  // LOGOUT
 
+  const logout = async()=>{
 
 
+    try{
 
 
+      await signOut(auth);
 
+      setUser(null);
 
 
+    }
+    catch(error){
 
-return(
 
+      console.log(error);
 
-<AuthContext.Provider
 
+    }
 
-value={{
 
-user,
+  };
 
-loading,
 
-googleLogin,
 
-logout,
 
-updateUser
 
-}}
 
 
+  // UPDATE PROFILE
 
->
+  const updateUser = async(newData)=>{
 
 
-{children}
+    try{
 
 
-</AuthContext.Provider>
+      if(auth.currentUser){
 
 
-);
+        await updateProfile(
+          auth.currentUser,
+          newData
+        );
+
+
+        setUser({
+
+          ...auth.currentUser,
+
+          ...newData
+
+        });
+
+
+      }
+
+
+    }
+    catch(error){
+
+
+      throw error;
+
+
+    }
+
+
+  };
+
+
+
+
+
+
+  return (
+
+    <AuthContext.Provider
+
+      value={{
+
+        user,
+
+        loading,
+
+        googleLogin,
+
+        logout,
+
+        updateUser
+
+      }}
+
+    >
+
+      {children}
+
+    </AuthContext.Provider>
+
+  );
 
 
 }
@@ -238,8 +318,6 @@ updateUser
 
 export function useAuth(){
 
-
-return useContext(AuthContext);
-
+  return useContext(AuthContext);
 
 }

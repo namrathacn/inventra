@@ -9,13 +9,27 @@ FiTrash2,
 FiPlus,
 FiX
 } from "react-icons/fi";
+import {
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  updateDoc,
+  doc
+} from "firebase/firestore";
 
 
 import {useState} from "react";
 
 import {useSearch} from "../../context/SearchContext";
 
+import { useEffect } from "react";
 
+
+
+
+
+import { useAuth } from "../../context/AuthContext";
 
 
 export default function Staff(){
@@ -24,61 +38,21 @@ export default function Staff(){
 
 const {search}=useSearch();
 
+const {user}=useAuth();
+console.log("STAFF USER",user);
 
 
-
-
-const [staff,setStaff]=useState([
-
-
-{
-id:1,
-name:"Rahul Sharma",
-role:"Manager",
-email:"rahul@gmail.com",
-phone:"9876543210"
-},
-
-
-{
-id:2,
-name:"Ananya Rao",
-role:"Sales Executive",
-email:"ananya@gmail.com",
-phone:"9876543211"
-}
-
-
-]);
-
-
-
-
-
-
+const [staff,setStaff]=useState([]);
 
 const [showModal,setShowModal]=useState(false);
 
-
 const [editStaff,setEditStaff]=useState(null);
-
-
-
-
-
-const [form,setForm]=useState({
-
-name:"",
-role:"",
-email:"",
-phone:""
-
+const [form, setForm] = useState({
+  name: "",
+  role: "",
+  email: "",
+  phone: ""
 });
-
-
-
-
-
 
 
 
@@ -106,7 +80,35 @@ setShowModal(true);
 
 
 
+useEffect(() => {
 
+  if (!user?.businessId) return;
+
+  loadStaff();
+
+}, [user]);
+
+
+
+async function loadStaff() {
+
+  const snap = await getDocs(
+    collection(
+      db,
+      "businesses",
+      user.businessId,
+      "staff"
+    )
+  );
+
+  setStaff(
+    snap.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }))
+  );
+
+}
 
 
 
@@ -133,11 +135,9 @@ setShowModal(true);
 
 
 
-function saveStaff(e){
-
+async function saveStaff(e){
 
 e.preventDefault();
-
 
 
 if(
@@ -146,44 +146,49 @@ if(
 !form.email ||
 !form.phone
 )
-
 return;
 
 
 
+try{
 
 
-if(editStaff){
+if (editStaff) {
+
+  await updateDoc(
+    doc(
+      db,
+      "businesses",
+      user.businessId,
+      "staff",
+      editStaff.id
+    ),
+    form
+  );
+
+}
+else{
 
 
-setStaff(
+const ref = await addDoc(
 
-staff.map(item=>
-
-item.id===editStaff.id
-
-?
+collection(
+db,
+"businesses",
+user.businessId,
+"staff"
+),
 
 {
 
 ...form,
 
-id:item.id
+createdAt:new Date()
 
 }
-
-:
-
-item
-
-)
 
 );
 
-
-}
-
-else{
 
 
 setStaff([
@@ -191,11 +196,8 @@ setStaff([
 ...staff,
 
 {
-
-...form,
-
-id:Date.now()
-
+id:ref.id,
+...form
 }
 
 ]);
@@ -204,8 +206,19 @@ id:Date.now()
 }
 
 
-
 setShowModal(false);
+
+await loadStaff();
+}
+
+catch(error){
+
+console.log(
+"STAFF SAVE ERROR:",
+error
+);
+
+}
 
 
 }
@@ -218,19 +231,34 @@ setShowModal(false);
 
 
 
-function deleteStaff(id){
+async function deleteStaff(id){
+
+try{
 
 
-setStaff(
+await deleteDoc(
 
-staff.filter(
-
-item=>item.id!==id
-
+doc(
+db,
+"businesses",
+user.businessId,
+"staff",
+id
 )
 
 );
 
+
+await loadStaff();
+
+
+}
+
+catch(error){
+
+console.log(error);
+
+}
 
 }
 
@@ -325,9 +353,16 @@ Manage employees and roles
 
 <button
 
-onClick={openAdd}
+type="button"
+
+onClick={()=>{
+console.log("ADD STAFF CLICKED");
+openAdd();
+}}
 
 className="
+relative
+z-50
 bg-cyan-500
 text-white
 px-5
@@ -336,8 +371,9 @@ rounded-xl
 flex
 items-center
 gap-2
-">
-
+cursor-pointer
+"
+>
 
 <FiPlus/>
 
