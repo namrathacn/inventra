@@ -57,7 +57,7 @@ const container = {
   hidden: {},
   show: {
     transition: {
-      staggerChildren: 0.08,
+      staggerChildren: 0.06,
     },
   },
 };
@@ -65,7 +65,7 @@ const container = {
 const item = {
   hidden: {
     opacity: 0,
-    x: -25,
+    x: -20,
   },
   show: {
     opacity: 1,
@@ -91,8 +91,7 @@ export default function Sidebar() {
         opacity: 1,
       }}
       transition={{
-        duration: 0.6,
-        ease: "easeOut",
+        duration: 0.5,
       }}
       className="
         fixed
@@ -101,21 +100,21 @@ export default function Sidebar() {
         z-40
         h-screen
         w-72
-        overflow-hidden
         border-r
         border-white/10
         bg-[#06101d]/95
         backdrop-blur-3xl
+        overflow-hidden
       "
     >
-      {/* Animated Background */}
+      {/* Background */}
 
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 overflow-hidden">
 
         <motion.div
           animate={{
             scale: [1, 1.25, 1],
-            rotate: [0, 25, 0],
+            rotate: [0, 20, 0],
           }}
           transition={{
             duration: 15,
@@ -136,7 +135,7 @@ export default function Sidebar() {
         <motion.div
           animate={{
             scale: [1.2, 1, 1.2],
-            rotate: [0, -25, 0],
+            rotate: [0, -20, 0],
           }}
           transition={{
             duration: 18,
@@ -144,7 +143,7 @@ export default function Sidebar() {
           }}
           className="
             absolute
-            right-[-140px]
+            right-[-120px]
             bottom-[-120px]
             h-80
             w-80
@@ -158,9 +157,9 @@ export default function Sidebar() {
 
       <div className="relative z-10 flex h-full flex-col">
 
-        {/* Brand */}
+        {/* Logo */}
 
-        <div className="px-6 pt-8 pb-8">
+        <div className="px-6 pt-6 pb-5">
 
           <motion.div
             whileHover={{
@@ -197,9 +196,9 @@ export default function Sidebar() {
               <p
                 className="
                   mt-1
-                  text-[11px]
+                  text-[10px]
                   uppercase
-                  tracking-[0.28em]
+                  tracking-[0.30em]
                   text-sky-400
                 "
               >
@@ -212,17 +211,21 @@ export default function Sidebar() {
 
         </div>
 
+        {/* Navigation */}
+
         <motion.nav
           variants={container}
           initial="hidden"
           animate="show"
           className="
-            flex-1
-            space-y-2
-            px-4
-          "
+  flex-1
+  overflow-y-auto
+  px-4
+  space-y-2
+  pb-4
+"
         >
-                      {menuItems.map((menu) => {
+                    {menuItems.map((menu) => {
             const Icon = menu.icon;
 
             return (
@@ -234,17 +237,17 @@ export default function Sidebar() {
                   {({ isActive }) => (
                     <motion.div
                       whileHover={{
-                        x: 6,
+                        x: 5,
                       }}
                       whileTap={{
                         scale: 0.98,
                       }}
                       className={`
+                        group
                         relative
                         flex
                         items-center
                         gap-4
-                        overflow-hidden
                         rounded-2xl
                         px-4
                         py-3
@@ -253,14 +256,14 @@ export default function Sidebar() {
 
                         ${
                           isActive
-                            ? "bg-white/10 text-white border border-sky-400/20 shadow-lg shadow-sky-500/10"
+                            ? "border border-sky-400/20 bg-white/10 text-white shadow-lg shadow-sky-500/10"
                             : "text-slate-400 hover:bg-white/5 hover:text-white"
                         }
                       `}
                     >
                       {isActive && (
                         <motion.div
-                          layoutId="sidebar-active"
+                          layoutId="active-sidebar"
                           className="
                             absolute
                             left-0
@@ -303,11 +306,12 @@ export default function Sidebar() {
                         className={`
                           text-sm
                           transition-all
+                          duration-300
 
                           ${
                             isActive
                               ? "translate-x-0 opacity-100"
-                              : "opacity-0 -translate-x-2 group-hover:opacity-100"
+                              : "-translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
                           }
                         `}
                       />
@@ -317,13 +321,12 @@ export default function Sidebar() {
               </motion.div>
             );
           })}
-
         </motion.nav>
 
         {/* User Card */}
 
-        <div className="p-5">
-                  <motion.div
+       <div className="px-4 pb-3 mt-auto">
+          <motion.div
             initial={{
               opacity: 0,
               y: 20,
@@ -333,72 +336,95 @@ export default function Sidebar() {
               y: 0,
             }}
             transition={{
-              delay: 0.5,
+              delay: 0.4,
             }}
             className="
-              rounded-3xl
-              border
-              border-white/10
-              bg-white/5
-              p-4
-              backdrop-blur-xl
-            "
+  rounded-2xl
+  border
+  border-white/10
+  bg-white/[0.06]
+  backdrop-blur-2xl
+  shadow-xl
+  shadow-sky-500/10
+  px-3
+  py-2.5
+"
           >
             <div className="flex items-center gap-3">
 
-              <div
-                className="
-                  flex
-                  h-12
-                  w-12
-                  items-center
-                  justify-center
-                  rounded-2xl
-                  bg-gradient-to-br
-                  from-pink-500
-                  via-purple-500
-                  to-indigo-600
-                  text-lg
-                  font-bold
-                  text-white
-                "
-              >
-                {(user?.name || "A").charAt(0).toUpperCase()}
-              </div>
+  {user?.photoURL ? (
+    <img
+      src={user.photoURL}
+      alt="Profile"
+      className="
+        h-10
+        w-10
+        rounded-xl
+        object-cover
+        border
+        border-white/10
+        shrink-0
+      "
+    />
+  ) : (
+    <div
+      className="
+        h-11
+        w-11
+        rounded-xl
+        bg-gradient-to-br
+        from-pink-500
+        via-purple-500
+        to-indigo-600
+        flex
+        items-center
+        justify-center
+        text-white
+        font-bold
+        text-sm
+        shrink-0
+      "
+    >
+      {(user?.displayName || user?.email || "A")
+        .charAt(0)
+        .toUpperCase()}
+    </div>
+  )}
 
-              <div className="flex-1 overflow-hidden">
+  <div className="min-w-0 flex-1">
 
-                <p className="truncate font-semibold text-white">
-                  {user?.name || "Admin"}
-                </p>
+    <p className="truncate text-[13px] font-semibold text-white">
+      {user?.displayName || "Admin"}
+    </p>
 
-                <p className="truncate text-xs text-slate-400">
-                  {user?.email || "admin@inventra.com"}
-                </p>
+    <p className="truncate text-[10px] text-slate-400">
+      {user?.email || "admin@inventra.com"}
+    </p>
 
-              </div>
+  </div>
 
-            </div>
+</div>
 
-            <div
-              className="
-                mt-4
-                rounded-xl
-                border
-                border-sky-500/20
-                bg-sky-500/10
-                px-3
-                py-2
-                text-center
-                text-xs
-                font-semibold
-                uppercase
-                tracking-wider
-                text-sky-300
-              "
-            >
-              Store Manager
-            </div>
+        <div
+  className="
+    mt-2
+    rounded-xl
+    border
+    border-cyan-400/20
+    bg-gradient-to-r
+    from-cyan-500/10
+    to-blue-500/10
+    py-1.5
+    text-center
+    text-[9px]
+    font-semibold
+    uppercase
+    tracking-[0.22em]
+    text-cyan-300
+  "
+>
+  Store Manager
+</div>
 
             <motion.button
               whileHover={{
@@ -412,7 +438,7 @@ export default function Sidebar() {
                 navigate("/");
               }}
               className="
-                mt-4
+                mt-2
                 flex
                 w-full
                 items-center
@@ -422,16 +448,18 @@ export default function Sidebar() {
                 border
                 border-red-500/20
                 bg-red-500/10
-                py-3
+                py-2
+                text-[13px]
                 font-semibold
                 text-red-300
-                transition
+                transition-all
                 hover:bg-red-500/20
               "
             >
               <FiLogOut />
               Logout
             </motion.button>
+
           </motion.div>
 
         </div>

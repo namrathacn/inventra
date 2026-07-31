@@ -81,50 +81,25 @@ const [googleLoading,setGoogleLoading]=useState(false);
 
 
 
-const login=async(e)=>{
+const login = async (e) => {
+  e.preventDefault();
 
+  console.log("Email =", JSON.stringify(email));
+  console.log("Password =", JSON.stringify(password));
 
-e.preventDefault();
+  setLoading(true);
 
+  try {
+    await signInWithEmailAndPassword(auth, email.trim(), password);
 
-setLoading(true);
+    toast.success("Welcome back to Inventra");
+    navigate("/dashboard");
+  } catch (error) {
+    console.error(error);
+    toast.error(error.code);
+  }
 
-
-try{
-
-
-await signInWithEmailAndPassword(
-
-auth,
-
-email,
-
-password
-
-);
-
-
-
-toast.success(
-"Welcome back to Inventra"
-);
-
-
-navigate("/dashboard");
-
-
-}
-
-catch (error) {
-  console.error("Google Login Error:", error);
-
-  toast.error(error.code || error.message);
-}
-
-
-setLoading(false);
-
-
+  setLoading(false);
 };
 
 
