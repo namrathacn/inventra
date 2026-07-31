@@ -11,7 +11,7 @@ const router = express.Router();
 // GET USER BUSINESS
 // =======================================
 
-async function getUserBusiness(uid){
+async function getUserBusiness(uid) {
 
   const userSnap = await db
     .collection("users")
@@ -19,7 +19,7 @@ async function getUserBusiness(uid){
     .get();
 
 
-  if(!userSnap.exists){
+  if (!userSnap.exists) {
     throw new Error("User profile not found");
   }
 
@@ -27,7 +27,7 @@ async function getUserBusiness(uid){
   const userData = userSnap.data();
 
 
-  if(!userData.businessId){
+  if (!userData.businessId) {
     throw new Error("No business assigned");
   }
 
@@ -42,18 +42,20 @@ async function getUserBusiness(uid){
 // PRODUCT HELPERS
 // =======================================
 
-async function findProductByName(productName, businessId){
+
+async function findProductByName(productName, businessId) {
 
   const snapshot = await db
     .collection("products")
-    .where("name","==",productName)
-    .where("businessId","==",businessId)
+    .where("name", "==", productName)
+    .where("businessId", "==", businessId)
     .limit(1)
     .get();
 
 
-  if(snapshot.empty)
+  if (snapshot.empty) {
     return null;
+  }
 
 
   return snapshot.docs[0];
@@ -62,7 +64,13 @@ async function findProductByName(productName, businessId){
 
 
 
-async function increaseStock(productName, qty, businessId){
+
+
+async function increaseStock(
+  productName,
+  qty,
+  businessId
+) {
 
 
   const productDoc =
@@ -72,9 +80,9 @@ async function increaseStock(productName, qty, businessId){
     );
 
 
-  if(!productDoc)
+  if (!productDoc) {
     return;
-
+  }
 
 
   const data = productDoc.data();
@@ -83,9 +91,9 @@ async function increaseStock(productName, qty, businessId){
   await productDoc.ref.update({
 
     stock:
-    (Number(data.stock)||0)
-    +
-    Number(qty)
+      (Number(data.stock) || 0)
+      +
+      Number(qty)
 
   });
 
@@ -95,7 +103,12 @@ async function increaseStock(productName, qty, businessId){
 
 
 
-async function decreaseStock(productName, qty, businessId){
+
+async function decreaseStock(
+  productName,
+  qty,
+  businessId
+) {
 
 
   const productDoc =
@@ -105,7 +118,7 @@ async function decreaseStock(productName, qty, businessId){
     );
 
 
-  if(!productDoc){
+  if (!productDoc) {
 
     throw new Error(
       "Product not found"
@@ -114,12 +127,11 @@ async function decreaseStock(productName, qty, businessId){
   }
 
 
-
   const data = productDoc.data();
 
 
   const stock =
-    Number(data.stock)||0;
+    Number(data.stock) || 0;
 
 
 
@@ -136,8 +148,8 @@ async function decreaseStock(productName, qty, businessId){
   await productDoc.ref.update({
 
     stock:
-    stock -
-    Number(qty)
+      stock -
+      Number(qty)
 
   });
 
@@ -146,92 +158,99 @@ async function decreaseStock(productName, qty, businessId){
 
 
 
+
 // =======================================
 // GET ALL ORDERS
 // =======================================
 
 
-router.get("/", verifyToken, async (req, res) => {
-  try {
-
-    const userSnap = await db
-      .collection("users")
-      .doc(req.user.uid)
-      .get();
+router.get("/", verifyToken, async(req,res)=>{
 
 
-    if (!userSnap.exists) {
-      return res.status(404).json({
-        success:false,
-        message:"User profile not found"
-      });
-    }
+try{
 
 
-    const userData = userSnap.data();
-
-
-    const snapshot = await db
-      .collection("orders")
-      .where(
-        "businessId",
-        "==",
-        userData.businessId
-      )
-      .orderBy(
-        "createdAt",
-        "desc"
-      )
-      .get();
+const userData =
+await getUserBusiness(
+req.user.uid
+);
 
 
 
-    const orders = snapshot.docs.map(doc=>({
-
-      id:doc.id,
-      ...doc.data()
-
-    }));
-
-
-
-    console.log(
-      "ORDER BUSINESS:",
-      userData.businessId
-    );
-
-
-    console.log(
-      "ORDERS FOUND:",
-      orders.length
-    );
+const snapshot =
+await db
+.collection("orders")
+.where(
+"businessId",
+"==",
+userData.businessId
+)
+.orderBy(
+"createdAt",
+"desc"
+)
+.get();
 
 
 
-    res.json({
+const orders =
+snapshot.docs.map(doc=>({
 
-      success:true,
-      data:orders
+id:doc.id,
 
-    });
+...doc.data()
 
-
-  } catch(error){
-
-    console.error(error);
+}));
 
 
-    res.status(500).json({
 
-      success:false,
-      message:error.message
+console.log(
+"ORDER BUSINESS:",
+userData.businessId
+);
 
-    });
+
+console.log(
+"ORDERS FOUND:",
+orders.length
+);
 
 
-  }
+
+res.json({
+
+success:true,
+
+data:orders
 
 });
+
+
+
+}
+catch(error){
+
+
+console.error(error);
+
+
+res.status(500).json({
+
+success:false,
+
+message:error.message
+
+});
+
+
+}
+
+
+});
+
+
+
+
 
 
 // =======================================
@@ -298,19 +317,16 @@ res.json({
 success:true,
 
 data:{
-
 id:doc.id,
-
 ...order
-
 }
 
 });
 
 
-
 }
 catch(error){
+
 
 console.error(error);
 
@@ -323,6 +339,7 @@ message:error.message
 
 });
 
+
 }
 
 
@@ -331,8 +348,10 @@ message:error.message
 
 
 
+
+
 // =======================================
-// ADD ORDER
+// CREATE ORDER
 // =======================================
 
 
@@ -375,12 +394,12 @@ return res.status(400).json({
 
 success:false,
 
-message:"Customer product amount required"
+message:
+"Customer, product and amount required"
 
 });
 
 }
-
 
 
 
@@ -389,11 +408,14 @@ Number(quantity)||1;
 
 
 
-
 await decreaseStock(
+
 product,
+
 qty,
+
 userData.businessId
+
 );
 
 
@@ -404,17 +426,22 @@ const order = {
 
 customer,
 
+
 product,
+
 
 quantity:qty,
 
+
 amount:Number(amount),
+
 
 status:
 status || "Pending",
 
 
-businessId:userData.businessId,
+businessId:
+userData.businessId,
 
 
 createdAt:
@@ -441,22 +468,20 @@ res.status(201).json({
 
 success:true,
 
-message:"Order created",
+message:
+"Order created successfully",
 
 data:{
-
 id:orderRef.id,
-
 ...order
-
 }
 
 });
 
 
-
 }
 catch(error){
+
 
 console.error(error);
 
@@ -474,6 +499,8 @@ message:error.message
 
 
 });
+
+
 
 
 
@@ -496,14 +523,14 @@ req.user.uid
 
 
 
-const docRef =
+const orderRef =
 db.collection("orders")
 .doc(req.params.id);
 
 
 
 const snapshot =
-await docRef.get();
+await orderRef.get();
 
 
 
@@ -518,7 +545,6 @@ message:"Order not found"
 });
 
 }
-
 
 
 
@@ -543,7 +569,6 @@ message:"Unauthorized"
 
 
 
-
 const newProduct =
 req.body.product ??
 oldOrder.product;
@@ -557,31 +582,44 @@ Number(oldOrder.quantity);
 
 
 
+// restore old stock
+
 await increaseStock(
+
 oldOrder.product,
+
 Number(oldOrder.quantity),
+
 userData.businessId
+
 );
 
 
+
+// remove new stock
 
 await decreaseStock(
+
 newProduct,
+
 newQty,
+
 userData.businessId
+
 );
 
 
 
 
-await docRef.update({
+await orderRef.update({
 
 ...req.body,
 
 quantity:newQty,
 
+
 amount:
-req.body.amount!==undefined
+req.body.amount !== undefined
 ?
 Number(req.body.amount)
 :
@@ -589,6 +627,7 @@ oldOrder.amount,
 
 
 updatedAt:new Date()
+
 
 });
 
@@ -598,13 +637,15 @@ res.json({
 
 success:true,
 
-message:"Order updated"
+message:
+"Order updated successfully"
 
 });
 
 
 }
 catch(error){
+
 
 console.error(error);
 
@@ -622,6 +663,9 @@ message:error.message
 
 
 });
+
+
+
 
 
 
@@ -644,18 +688,18 @@ req.user.uid
 
 
 
-const docRef =
+const orderRef =
 db.collection("orders")
 .doc(req.params.id);
 
 
 
-const orderDoc =
-await docRef.get();
+const snapshot =
+await orderRef.get();
 
 
 
-if(!orderDoc.exists){
+if(!snapshot.exists){
 
 return res.status(404).json({
 
@@ -669,13 +713,14 @@ message:"Order not found"
 
 
 
-
 const order =
-orderDoc.data();
+snapshot.data();
 
 
 
-if(order.businessId !== userData.businessId){
+if(
+order.businessId !== userData.businessId
+){
 
 return res.status(403).json({
 
@@ -686,7 +731,6 @@ message:"Unauthorized"
 });
 
 }
-
 
 
 
@@ -702,7 +746,7 @@ userData.businessId
 
 
 
-await docRef.delete();
+await orderRef.delete();
 
 
 
@@ -710,13 +754,15 @@ res.json({
 
 success:true,
 
-message:"Order deleted"
+message:
+"Order deleted successfully"
 
 });
 
 
 }
 catch(error){
+
 
 console.error(error);
 
@@ -734,6 +780,7 @@ message:error.message
 
 
 });
+
 
 
 
