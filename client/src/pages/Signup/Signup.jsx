@@ -31,7 +31,9 @@ FiArrowRight,
 FiLock,
 FiMail,
 FiUser,
-FiBriefcase
+FiBriefcase,
+FiUsers,
+FiShield
 } from "react-icons/fi";
 
 
@@ -62,6 +64,8 @@ const [email,setEmail]=useState("");
 const [password,setPassword]=useState("");
 
 const [businessName,setBusinessName]=useState("");
+
+const [businessId,setBusinessId]=useState("");
 
 const [pin,setPin]=useState("");
 
@@ -111,41 +115,23 @@ if(joinMode){
 
 
 
-const q =
-query(
-
+const q = query(
 collection(db,"businesses"),
-
-where(
-"pin",
-"==",
-pin
-)
-
+where("businessId","==",businessId),
+where("pin","==",pin)
 );
 
-
-
-const snap =
-await getDocs(q);
-
-
+const snap = await getDocs(q);
 
 if(snap.empty){
 
 throw new Error(
-"Invalid Business PIN"
+"Invalid Business ID or PIN"
 );
 
 }
 
-
-
-
-const business =
-snap.docs[0];
-
-
+const business = snap.docs[0];
 
 
 await setDoc(
@@ -204,35 +190,32 @@ toast.success(
 else{
 
 
+const generatedBusinessId =
+"INV-" +
+Math.random()
+.toString(36)
+.substring(2,8)
+.toUpperCase();
+
 const businessRef =
 await addDoc(
-
-collection(
-db,
-"businesses"
-),
-
+collection(db,"businesses"),
 {
 
+businessId:
+generatedBusinessId,
 
 businessName,
 
-
 pin,
 
-
-ownerId:
-user.uid,
-
+ownerId:user.uid,
 
 createdAt:
 serverTimestamp()
 
-
 }
-
 );
-
 
 
 
@@ -261,7 +244,7 @@ role:"admin",
 
 
 businessId:
-businessRef.id,
+generatedBusinessId,
 
 
 createdAt:
@@ -275,7 +258,11 @@ serverTimestamp()
 
 
 toast.success(
-"Business created successfully"
+`Business created!
+
+Business ID: ${generatedBusinessId}
+
+Share this Business ID and PIN with your staff.`
 );
 
 
@@ -321,38 +308,109 @@ setLoading(false);
 
 async function googleSignup(){
 
-
 try{
 
+if(!businessName){
 
-const provider =
-new GoogleAuthProvider();
+toast.error("Enter Business Name");
 
+return;
 
+}
 
-const result =
-await signInWithPopup(
+if(!pin){
+
+toast.error("Enter Business PIN");
+
+return;
+
+}
+
+const provider = new GoogleAuthProvider();
+
+const result = await signInWithPopup(
 auth,
 provider
 );
 
+const user = result.user;
 
 
-const user =
-result.user;
+// ================= JOIN BUSINESS =================
+
+if(joinMode){
+
+const q = query(
+
+collection(db,"businesses"),
+
+where("businessId","==",businessId),
+
+where("businessName","==",businessName),
+
+where("pin","==",pin)
+
+);
+
+const snap = await getDocs(q);
+
+if(snap.empty){
+
+toast.error(
+"Invalid Business Details"
+);
+
+return;
+
+}
+
+const business = snap.docs[0];
+
+await setDoc(
+
+doc(db,"users",user.uid),
+
+{
+
+uid:user.uid,
+
+name:user.displayName,
+
+email:user.email,
+
+role:"staff",
+
+businessId:business.data().businessId,
+
+createdAt:serverTimestamp()
+
+}
+
+);
+
+toast.success("Joined Business");
+
+}
 
 
+// ================= CREATE BUSINESS =================
 
-if(!joinMode){
+else{
 
+const generatedBusinessId =
+"INV-" +
+Math.random()
+.toString(36)
+.substring(2,8)
+.toUpperCase();
 
-const businessRef =
 await addDoc(
 
 collection(db,"businesses"),
 
 {
 
+businessId:generatedBusinessId,
 
 businessName,
 
@@ -360,26 +418,17 @@ pin,
 
 ownerId:user.uid,
 
-createdAt:
-serverTimestamp()
+createdAt:serverTimestamp()
 
 }
 
 );
 
-
-
-
 await setDoc(
 
-doc(
-db,
-"users",
-user.uid
-),
+doc(db,"users",user.uid),
 
 {
-
 
 uid:user.uid,
 
@@ -389,39 +438,32 @@ email:user.email,
 
 role:"admin",
 
-businessId:
-businessRef.id
+businessId:generatedBusinessId,
+
+createdAt:serverTimestamp()
 
 }
 
 );
-
-
-}
-
-
 
 toast.success(
-"Signup successful"
+`Business Created
+
+Business ID : ${generatedBusinessId}`
 );
 
+}
 
 navigate("/dashboard");
-
 
 }
 catch(error){
 
 console.log(error);
 
-toast.error(
-error.message
-);
-
+toast.error(error.message);
 
 }
-
-
 
 }
 
@@ -432,180 +474,244 @@ error.message
 
 
 
-return(
+return (
 
 <AuthLayout>
 
-
 <AuthCard
-
-title="Create Account"
-
+title={joinMode ? "Join Business" : "Create Business"}
 subtitle={
 joinMode
-?
-"Join your business workspace"
-:
-"Create your Inventra business"
+? "Join your team's workspace."
+: "Create your own inventory workspace."
 }
-
 >
 
+<div className="grid grid-cols-2 gap-4 mb-8">
 
+<motion.div
+whileHover={{ y: -3 }}
+whileTap={{ scale: 0.98 }}
+onClick={() => setJoinMode(false)}
+className={`
+cursor-pointer
+rounded-3xl
+border
+backdrop-blur-2xl
+p-6
+transition-all
+duration-300
+${
+!joinMode
+? "border-cyan-400/40 bg-cyan-500/10 shadow-xl shadow-cyan-500/20"
+: "border-white/10 bg-white/[0.04] hover:bg-white/[0.08]"
+}
+`}
+>
 
+<div
+className="
+h-14
+w-14
+rounded-2xl
+bg-gradient-to-br
+from-cyan-500
+to-blue-600
+flex
+items-center
+justify-center
+text-white
+mb-5
+"
+>
+
+<FiShield className="text-2xl"/>
+
+</div>
+
+<h2 className="text-lg font-bold text-white">
+Create Business
+</h2>
+
+<p className="mt-2 text-sm text-slate-400 leading-6">
+Create your own workspace and become the administrator.
+</p>
+
+</motion.div>
+
+<motion.div
+whileHover={{ y: -3 }}
+whileTap={{ scale: 0.98 }}
+onClick={() => setJoinMode(true)}
+className={`
+cursor-pointer
+rounded-3xl
+border
+backdrop-blur-2xl
+p-6
+transition-all
+duration-300
+${
+joinMode
+? "border-cyan-400/40 bg-cyan-500/10 shadow-xl shadow-cyan-500/20"
+: "border-white/10 bg-white/[0.04] hover:bg-white/[0.08]"
+}
+`}
+>
+
+<div
+className="
+h-14
+w-14
+rounded-2xl
+bg-gradient-to-br
+from-violet-500
+to-purple-600
+flex
+items-center
+justify-center
+text-white
+mb-5
+"
+>
+
+<FiUsers className="text-2xl"/>
+
+</div>
+
+<h2 className="text-lg font-bold text-white">
+Join Business
+</h2>
+
+<p className="mt-2 text-sm text-slate-400 leading-6">
+Join an existing workspace using the Business Name and PIN.
+</p>
+
+</motion.div>
+
+</div>
 
 <GoogleButton
-
 onClick={googleSignup}
-
 text="Continue with Google"
-
 />
 
+<div className="flex items-center gap-4 my-7">
 
+<div className="h-px flex-1 bg-white/10"/>
 
+<p className="text-xs text-slate-500 tracking-[0.35em]">
+OR
+</p>
 
+<div className="h-px flex-1 bg-white/10"/>
 
+</div>
 
-<div className="space-y-4 mt-8">
-
-
-
-
+<form
+onSubmit={createAccount}
+className="space-y-4"
+>
 
 <AuthInput
-
 icon={<FiUser/>}
-
 placeholder="Full Name"
-
 value={name}
-
 setValue={setName}
-
 />
 
-
-
-
-
-
 <AuthInput
-
 icon={<FiMail/>}
-
-placeholder="Email"
-
+placeholder="Email Address"
 value={email}
-
 setValue={setEmail}
-
 />
-
-
-
-
-
+{joinMode && (
 
 <AuthInput
-
-icon={<FiLock/>}
-
-placeholder="Password"
-
-type="password"
-
-value={password}
-
-setValue={setPassword}
-
-/>
-
-
-
-
-
-
-
-{
-
-!joinMode &&
-
-<AuthInput
-
 icon={<FiBriefcase/>}
-
-placeholder="Business Name"
-
-value={businessName}
-
-setValue={setBusinessName}
-
+placeholder="Business ID (Example: INV-A1B2C3)"
+value={businessId}
+setValue={setBusinessId}
 />
 
-}
-
-
-
-
-
-
+)}
+<AuthInput
+icon={<FiLock/>}
+placeholder="Password"
+type="password"
+value={password}
+setValue={setPassword}
+/>
 
 <AuthInput
+icon={<FiBriefcase/>}
+placeholder="Business Name (Example: Super Market)"
+value={businessName}
+setValue={setBusinessName}
+/>
 
+<AuthInput
 icon={<FiLock/>}
-
 placeholder={
 joinMode
 ?
-"Business PIN"
+"Business PIN (Example: 1234)"
 :
 "Create Business PIN"
 }
-
 value={pin}
-
 setValue={setPin}
-
 />
 
+<div className="
+rounded-2xl
+border
+border-cyan-400/20
+bg-cyan-500/10
+backdrop-blur-xl
+p-4
+">
 
+<p className="text-xs text-cyan-300 leading-6">
 
+{joinMode
+?
+"Enter the exact Business Name and PIN shared by your Administrator."
+:
+"Share this Business Name and PIN only with your staff members."}
 
+</p>
 
-
+</div>
 
 <motion.button
-
-whileHover={{
-scale:1.02
-}}
-
+whileHover={{scale:1.02}}
+whileTap={{scale:0.98}}
 disabled={loading}
-
-onClick={createAccount}
-
 className="
 w-full
 rounded-2xl
 bg-gradient-to-r
 from-cyan-500
-to-blue-600
+via-blue-500
+to-indigo-600
 py-4
-text-white
 font-semibold
+text-white
+shadow-xl
+shadow-cyan-500/30
 flex
+items-center
 justify-center
 gap-3
 "
-
 >
-
 
 {
 loading
 ?
-"Creating..."
+"Please wait..."
 :
 joinMode
 ?
@@ -614,80 +720,35 @@ joinMode
 "Create Business"
 }
 
-
-
 <FiArrowRight/>
-
 
 </motion.button>
 
-
-
-
-
-
-
-<button
-
-type="button"
-
-onClick={()=>setJoinMode(!joinMode)}
-
-className="
-text-cyan-400
+<p className="
+text-center
+text-slate-400
 text-sm
-mt-5
-"
+pt-2
+">
 
->
-
-
-{
-
-joinMode
-
-?
-
-"Create your own business instead"
-
-:
-
-"Have a Business PIN? Join as Staff"
-
-}
-
-
-
-</button>
-
-
-
-
-
-<p className="text-center text-slate-400 mt-5">
-
-Already have account?
+Already have an account?
 
 <Link
 to="/login"
-className="text-cyan-400 ml-2"
+className="text-cyan-400 ml-2 font-semibold"
 >
-Login
-</Link>
 
+Login
+
+</Link>
 
 </p>
 
-
-
-</div>
-
+</form>
 
 </AuthCard>
 
-
 </AuthLayout>
-
 
 );
 

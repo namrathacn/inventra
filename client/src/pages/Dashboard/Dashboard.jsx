@@ -43,12 +43,69 @@ const {
 
 
 const filteredOrders = orders
-  .filter((order) =>
-    order.product
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  )
-  .slice(0, 5);
+.filter((order)=>
+(order.product || "")
+.toLowerCase()
+.includes(search.toLowerCase())
+)
+.slice(0,5);
+
+
+const availableStock = products.filter(
+p => Number(p.stock) > 5
+).length;
+
+const lowStock = products.filter(
+p => Number(p.stock) > 0 &&
+Number(p.stock) <= 5
+).length;
+
+const outOfStock = products.filter(
+p => Number(p.stock) === 0
+).length;
+
+
+const totalRevenue = orders.reduce(
+(sum,o)=>sum + Number(o.amount || 0),
+0
+);
+
+
+const totalCost = products.reduce(
+(sum,p)=>
+sum + (Number(p.price || 0) * Number(p.stock || 0)),
+0
+);
+
+
+const profit =
+Math.max(
+totalRevenue - totalCost,
+0
+);
+
+const loss =
+Math.max(
+totalCost - totalRevenue,
+0
+);
+
+
+const deadStock =
+products.filter(
+p=>Number(p.stock)>0
+).length;
+
+
+const demandForecast =
+orders.length===0
+?0
+:Math.min(
+Math.round(
+orders.length*8
+),
+100
+);
 
 
 
@@ -387,7 +444,7 @@ text-white
 mt-3
 ">
 
-350
+{availableStock}
 
 </h3>
 
@@ -429,7 +486,7 @@ text-white
 mt-3
 ">
 
-14
+{lowStock}
 
 </h3>
 
@@ -476,7 +533,7 @@ text-white
 mt-3
 ">
 
-8
+{outOfStock}
 
 </h3>
 
@@ -909,7 +966,7 @@ text-white
 mt-3
 ">
 
-{formatCurrency(482000)}
+{formatCurrency(profit)}
 
 </h4>
 
@@ -922,7 +979,13 @@ text-slate-300
 mt-2
 ">
 
-+12% growth this month
+{
+orders.length===0
+?
+"No sales yet"
+:
+`${orders.length} Orders`
+}
 
 </p>
 
@@ -967,7 +1030,7 @@ text-white
 mt-3
 ">
 
-{formatCurrency(38500)}
+{formatCurrency(loss)}
 
 </h4>
 
@@ -980,7 +1043,7 @@ text-slate-300
 mt-2
 ">
 
-Low selling products affecting revenue
+No active losses detected
 
 </p>
 
@@ -1024,7 +1087,7 @@ text-white
 mt-3
 ">
 
-12
+{deadStock}
 
 </h4>
 
@@ -1037,7 +1100,7 @@ text-slate-300
 mt-2
 ">
 
-Items inactive for 30 days
+Products currently in stock
 
 </p>
 
@@ -1082,7 +1145,7 @@ text-white
 mt-3
 ">
 
-+18%
+{demandForecast}%
 
 </h4>
 
@@ -1095,7 +1158,13 @@ text-slate-300
 mt-2
 ">
 
-Expected sales increase
+{
+orders.length===0
+?
+"No prediction yet"
+:
+"Based on current orders"
+}
 
 </p>
 

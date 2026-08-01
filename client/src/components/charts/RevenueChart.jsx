@@ -21,43 +21,12 @@ import { motion } from "framer-motion";
 
 
 import { useCurrency } from "../../context/CurrencyContext";
+import { useData } from "../../context/DataContext";
 
 
 
 
-const data=[
 
-{
-month:"Jan",
-revenue:350000
-},
-
-{
-month:"Feb",
-revenue:520000
-},
-
-{
-month:"Mar",
-revenue:480000
-},
-
-{
-month:"Apr",
-revenue:760000
-},
-
-{
-month:"May",
-revenue:1100000
-},
-
-{
-month:"Jun",
-revenue:1528860
-}
-
-];
 
 
 
@@ -67,9 +36,68 @@ export default function RevenueChart(){
 
 
 
-const {
-formatCurrency
-}=useCurrency();
+const { formatCurrency } = useCurrency();
+
+const { orders } = useData();
+
+const months = [
+"Jan",
+"Feb",
+"Mar",
+"Apr",
+"May",
+"Jun",
+"Jul",
+"Aug",
+"Sep",
+"Oct",
+"Nov",
+"Dec"
+];
+
+const data = months.map((month,index)=>{
+
+const revenue = orders
+.filter(order=>{
+
+const date = new Date(order.createdAt);
+
+return date.getMonth()===index;
+
+})
+.reduce(
+(sum,order)=>
+sum+Number(order.amount||0),
+0
+);
+
+return{
+month,
+revenue
+};
+
+});
+
+const totalRevenue = data.reduce(
+(sum,item)=>sum+item.revenue,
+0
+);
+
+const previousRevenue = data
+.slice(0,5)
+.reduce(
+(sum,item)=>sum+item.revenue,
+0
+);
+
+const growth =
+previousRevenue===0
+?0
+:
+Math.round(
+((totalRevenue-previousRevenue)/
+previousRevenue)*100
+);
 
 
 
@@ -270,7 +298,7 @@ font-semibold
 
 <FiTrendingUp/>
 
-24.5%
+{growth}%
 
 
 </div>
@@ -298,7 +326,7 @@ mb-8
 >
 
 
-{formatCurrency(1528860)}
+{formatCurrency(totalRevenue)}
 
 
 </h1>

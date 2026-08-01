@@ -44,7 +44,8 @@ export default function Sidebar() {
 
  const { user, logout } = useAuth();
 const navigate = useNavigate();
-
+console.log("SIDEBAR USER:", user);
+  console.log("SIDEBAR ROLE:", user?.role);
 
 const menuItems = [
 
@@ -435,6 +436,7 @@ console.log("MENU ITEMS:", menuItems);
     text-cyan-300
   "
 >
+  
   {user?.role === "admin"
   ? "Administrator"
   : "Staff Member"}

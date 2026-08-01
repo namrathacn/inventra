@@ -49,72 +49,55 @@ const [loading,setLoading]=useState(true);
 
 
 
-useEffect(()=>{
+useEffect(() => {
 
+  const unsubscribe = onAuthStateChanged(
+    auth,
+    async (currentUser) => {
 
-const unsubscribe = onAuthStateChanged(
-auth,
-async(currentUser)=>{
+      if (!currentUser) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
 
+      const userRef = doc(db, "users", currentUser.uid);
+      const snap = await getDoc(userRef);
 
-if(currentUser){
+      if (snap.exists()) {
 
+        const profile = snap.data();
 
-const userRef =
-doc(
-db,
-"users",
-currentUser.uid
-);
+        console.log("FIRESTORE PROFILE:", profile);
 
+        setUser({
+          uid: currentUser.uid,
+          email: currentUser.email,
+          name: profile.name,
+          role: profile.role,
+          businessId: profile.businessId,
+          photoURL: currentUser.photoURL,
+        });
 
-const snap =
-await getDoc(userRef);
+      } else {
 
+        setUser({
+          uid: currentUser.uid,
+          email: currentUser.email,
+          name: currentUser.displayName,
+          photoURL: currentUser.photoURL,
+        });
 
+      }
 
-if(snap.exists()){
+      setLoading(false);
 
+    }
+  );
 
-setUser({
+  return unsubscribe;
 
-...currentUser,
-
-...snap.data()
-
-});
-
-
-}
-else{
-
-
-setUser(currentUser);
-
-
-}
-
-
-}
-else{
-
-
-setUser(null);
-
-
-}
-
-
-setLoading(false);
-
-
-});
-
-
-return unsubscribe;
-
-
-},[]);
+}, []);
 
 
 
@@ -281,19 +264,7 @@ businessRef.id
 
 
 
-setUser({
 
-...auth.currentUser,
-
-
-role:"admin",
-
-
-businessId:
-businessRef.id
-
-
-});
 
 
 
@@ -401,19 +372,7 @@ business.id
 
 
 
-setUser({
 
-...auth.currentUser,
-
-
-role:"staff",
-
-
-businessId:
-business.id
-
-
-});
 
 
 
