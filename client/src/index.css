@@ -2,94 +2,146 @@
 
 *,
 *::before,
-*::after{
-  box-sizing:border-box;
+*::after {
+  box-sizing: border-box;
 }
 
 html,
 body,
-#root{
-  width:100%;
-  min-height:100%;
-  margin:0;
-  padding:0;
-  overflow-x:hidden;
+#root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
 
   font-family:
     "Inter",
+    "Segoe UI",
     system-ui,
+    -apple-system,
     sans-serif;
 }
 
-body{
+body {
+  min-height: 100vh;
+
   background:
-    radial-gradient(circle at 10% 10%, rgba(59,130,246,.18), transparent 35%),
-    radial-gradient(circle at 90% 20%, rgba(6,182,212,.12), transparent 35%),
-    radial-gradient(circle at 50% 100%, rgba(168,85,247,.08), transparent 45%),
-    #050816;
+    radial-gradient(circle at 15% 15%, rgba(37, 99, 235, 0.25), transparent 35%),
+    radial-gradient(circle at 85% 20%, rgba(6, 182, 212, 0.18), transparent 35%),
+    radial-gradient(circle at 50% 90%, rgba(124, 58, 237, 0.18), transparent 45%),
+    #020617;
 
-  color:white;
+  color: #ffffff;
 
-  transition:.3s ease;
+  transition: background 0.3s ease;
 
-  background-attachment:fixed;
+  background-attachment: fixed;
 }
 
-a{
-  color:inherit;
-  text-decoration:none;
+/* Links */
+
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-button{
-  cursor:pointer;
+
+/* Buttons */
+
+button {
+  cursor: pointer;
+  font-family: inherit;
 }
 
-img{
-  display:block;
-  max-width:100%;
+
+/* Images */
+
+img {
+  display: block;
+  max-width: 100%;
 }
 
-.glass-card{
 
-  background:rgba(255,255,255,.05);
+/* Glass UI */
 
-  border:1px solid rgba(255,255,255,.08);
+.glass-card {
 
-  backdrop-filter:blur(24px);
-  -webkit-backdrop-filter:blur(24px);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.08),
+      rgba(255,255,255,0.03)
+    );
+
+  border:
+    1px solid rgba(255,255,255,0.12);
+
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
 
   box-shadow:
-    0 12px 40px rgba(0,0,0,.35);
+    0 20px 60px rgba(0,0,0,0.35),
+    inset 0 1px 1px rgba(255,255,255,0.08);
 
 }
 
-.glass{
 
-  background:rgba(255,255,255,.05);
+/* Small glass elements */
 
-  border:1px solid rgba(255,255,255,.08);
+.glass {
 
-  backdrop-filter:blur(24px);
-  -webkit-backdrop-filter:blur(24px);
+  background:
+    rgba(255,255,255,0.05);
+
+  border:
+    1px solid rgba(255,255,255,0.1);
+
+  backdrop-filter:
+    blur(20px);
+
+  -webkit-backdrop-filter:
+    blur(20px);
 
 }
 
-.animate-card{
 
-  animation:slideUp .45s ease;
+/* Hover glass effect */
+
+.glass-card:hover {
+
+  border-color:
+    rgba(56,189,248,0.35);
+
+  transform:
+    translateY(-2px);
+
+  transition:
+    0.3s ease;
 
 }
 
-@keyframes slideUp{
 
-  from{
+/* Animations */
+
+.animate-card {
+
+  animation:
+    slideUp .45s ease;
+
+}
+
+
+@keyframes slideUp {
+
+  from {
 
     opacity:0;
-    transform:translateY(20px);
+    transform:translateY(25px);
 
   }
 
-  to{
+  to {
 
     opacity:1;
     transform:translateY(0);
@@ -98,43 +150,96 @@ img{
 
 }
 
-@keyframes pulse{
 
-  0%{
+@keyframes pulse {
+
+  0% {
+
     transform:scale(1);
     opacity:1;
+
   }
 
-  50%{
+  50% {
+
     transform:scale(1.35);
     opacity:.5;
+
   }
 
-  100%{
+  100% {
+
     transform:scale(1);
     opacity:1;
+
   }
 
 }
 
-::-webkit-scrollbar{
+
+/* Scrollbar */
+
+::-webkit-scrollbar {
+
   width:8px;
+
 }
 
-::-webkit-scrollbar-track{
-  background:transparent;
+
+::-webkit-scrollbar-track {
+
+  background:
+    transparent;
+
 }
 
-::-webkit-scrollbar-thumb{
-  background:#334155;
-  border-radius:999px;
+
+::-webkit-scrollbar-thumb {
+
+  background:
+    linear-gradient(
+      #2563eb,
+      #06b6d4
+    );
+
+  border-radius:
+    999px;
+
 }
 
-::-webkit-scrollbar-thumb:hover{
-  background:#475569;
+
+::-webkit-scrollbar-thumb:hover {
+
+  background:
+    #38bdf8;
+
 }
 
-::selection{
-  background:#06b6d4;
-  color:white;
+
+/* Text selection */
+
+::selection {
+
+  background:
+    #06b6d4;
+
+  color:
+    white;
+
+}
+
+
+/* Smooth rendering */
+
+body,
+button,
+input,
+textarea {
+
+  -webkit-font-smoothing:
+    antialiased;
+
+  -moz-osx-font-smoothing:
+    grayscale;
+
 }
