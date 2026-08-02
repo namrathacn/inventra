@@ -104,67 +104,48 @@ element={<StaffSignup/>}
 
 
 <Route
-
 path="/dashboard"
-
-element={<Dashboard/>}
-
-/>
-
-
-
-
-<Route
-
-path="/products"
-
-element={<Products/>}
-
-/>
-
-
-
-
-<Route
-
-path="/orders"
-
-element={<Orders/>}
-
-/>
-
-
-
-
-<Route
-path="/settings"
 element={
-<ProtectedRoute adminOnly={true}>
-  <Settings/>
-</ProtectedRoute>
+  <ProtectedRoute>
+    <Dashboard />
+  </ProtectedRoute>
 }
 />
 
-
-
-
 <Route
-
-path="/profile"
-
-element={<Profile/>}
-
+path="/products"
+element={
+  <ProtectedRoute>
+    <Products />
+  </ProtectedRoute>
+}
 />
 
-
-
+<Route
+path="/orders"
+element={
+  <ProtectedRoute>
+    <Orders />
+  </ProtectedRoute>
+}
+/>
 
 <Route
+path="/profile"
+element={
+  <ProtectedRoute>
+    <Profile />
+  </ProtectedRoute>
+}
+/>
 
+<Route
 path="/reports"
-
-element={<Reports/>}
-
+element={
+  <ProtectedRoute>
+    <Reports />
+  </ProtectedRoute>
+}
 />
 
 

@@ -84,22 +84,31 @@ const [googleLoading,setGoogleLoading]=useState(false);
 const login = async (e) => {
   e.preventDefault();
 
-  console.log("Email =", JSON.stringify(email));
-  console.log("Password =", JSON.stringify(password));
-
   setLoading(true);
 
   try {
-    await signInWithEmailAndPassword(auth, email.trim(), password);
+    await signInWithEmailAndPassword(
+      auth,
+      email.trim(),
+      password
+    );
+
+    // Wait for Firebase/AuthContext to finish loading
+    await auth.currentUser.getIdToken(true);
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     toast.success("Welcome back to Inventra");
+
     navigate("/dashboard");
+
   } catch (error) {
     console.error(error);
     toast.error(error.code);
-  }
 
-  setLoading(false);
+  } finally {
+    setLoading(false);
+  }
 };
 
 
@@ -110,45 +119,32 @@ const login = async (e) => {
 
 
 
-const handleGoogleLogin=async()=>{
+const handleGoogleLogin = async () => {
 
+  try {
 
-try{
+    setGoogleLoading(true);
 
+    await googleLogin();
 
-setGoogleLoading(true);
+    await auth.currentUser.getIdToken(true);
 
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
+    toast.success("Google login successful");
 
-await googleLogin();
+    navigate("/dashboard");
 
+  } catch (error) {
 
+    console.error(error);
+    toast.error("Google login failed");
 
-toast.success(
-"Google login successful"
-);
+  } finally {
 
+    setGoogleLoading(false);
 
-
-navigate("/dashboard");
-
-
-}
-
-catch(error){
-
-
-toast.error(
-"Google login failed"
-);
-
-
-}
-
-
-
-setGoogleLoading(false);
-
+  }
 
 };
 

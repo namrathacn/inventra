@@ -133,43 +133,30 @@ export function DataProvider({ children }) {
 
   useEffect(() => {
 
+  const unsubscribe = onAuthStateChanged(
+    auth,
+    async (user) => {
 
-    const unsubscribe = onAuthStateChanged(
-
-      auth,
-
-      (user) => {
-
-
-        if (user) {
-
-
-          loadData();
-
-
-        } else {
-
-
-          setProducts([]);
-
-          setOrders([]);
-
-          setLoading(false);
-
-
-        }
-
-
+      if (!user) {
+        setProducts([]);
+        setOrders([]);
+        setLoading(false);
+        return;
       }
 
-    );
+      try {
+        await user.getIdToken(true);
+        await loadData();
+      } catch (err) {
+        console.error(err);
+      }
 
+    }
+  );
 
+  return unsubscribe;
 
-    return () => unsubscribe();
-
-
-  }, []);
+}, []);
 
 
 
