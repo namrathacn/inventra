@@ -181,26 +181,24 @@ const snapshot =
 await db
 .collection("orders")
 .where(
-"businessId",
-"==",
-userData.businessId
-)
-.orderBy(
-"createdAt",
-"desc"
+  "businessId",
+  "==",
+  userData.businessId
 )
 .get();
 
 
 
-const orders =
-snapshot.docs.map(doc=>({
-
-id:doc.id,
-
-...doc.data()
-
-}));
+const orders = snapshot.docs
+  .map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }))
+  .sort((a, b) => {
+    const t1 = a.createdAt?.seconds || 0;
+    const t2 = b.createdAt?.seconds || 0;
+    return t2 - t1;
+  });
 
 
 
