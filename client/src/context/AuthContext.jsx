@@ -139,32 +139,22 @@ await getDoc(userRef);
 
 if(!snap.exists()){
 
-
 await setDoc(
 userRef,
 {
 
+uid: currentUser.uid,
 
-uid:
-currentUser.uid,
+name: currentUser.displayName,
 
+email: currentUser.email,
 
-name:
-currentUser.displayName,
+role: "admin",
 
-
-email:
-currentUser.email,
-
-
-role:
-"new"
-
-
+createdAt: serverTimestamp()
 
 }
 );
-
 
 }
 
