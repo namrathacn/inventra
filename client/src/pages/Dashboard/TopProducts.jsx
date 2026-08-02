@@ -1,110 +1,118 @@
-import { FiBox, FiTrendingUp } from "react-icons/fi";
 import { motion } from "framer-motion";
-
-import { useSearch } from "../../context/SearchContext";
 import { useCurrency } from "../../context/CurrencyContext";
 import { useData } from "../../context/DataContext";
 
 export default function TopProducts() {
-  const { search } = useSearch();
-
   const { formatCurrency } = useCurrency();
+  const { orders } = useData();
 
-  const { products } = useData();
+  const productSales = {};
 
-  const filteredProducts = products.filter((item) => {
-    const keyword = search.toLowerCase();
+  orders.forEach((order) => {
+    const name = order.product || "Unknown Product";
 
-    return (
-      item.name.toLowerCase().includes(keyword) ||
-      item.category.toLowerCase().includes(keyword)
-    );
+    if (!productSales[name]) {
+      productSales[name] = {
+        name,
+        quantity: 0,
+        revenue: 0,
+      };
+    }
+
+    productSales[name].quantity += Number(order.quantity || 1);
+    productSales[name].revenue += Number(order.amount || 0);
   });
+
+  const products = Object.values(productSales)
+    .sort((a, b) => b.quantity - a.quantity)
+    .slice(0, 5);
+
+  const highestQuantity =
+    products.length > 0
+      ? Math.max(...products.map((p) => p.quantity), 1)
+      : 1;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.6 }}
       className="
-      rounded-3xl
-      border
-      border-white/10
-      bg-white/5
-      backdrop-blur-xl
-      p-6
-    "
+        rounded-[32px]
+        border
+        border-white/10
+        bg-white/[0.06]
+        p-7
+        backdrop-blur-2xl
+        shadow-xl
+      "
     >
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-white">
-            Top Products
-          </h2>
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-2xl font-bold text-white">
+          Top Selling Products
+        </h2>
 
-          <p className="text-sm text-slate-400">
-            Best selling items
-          </p>
-        </div>
-
-        <div className="rounded-2xl bg-cyan-500/20 p-3">
-          <FiTrendingUp className="text-cyan-400 text-2xl" />
-        </div>
+        <span
+          className="
+            rounded-full
+            bg-cyan-400/10
+            px-4
+            py-2
+            text-xs
+            font-semibold
+            text-cyan-300
+          "
+        >
+          Live
+        </span>
       </div>
 
-      <div className="mt-6 space-y-4">
-        {filteredProducts.length > 0 ? (
-          filteredProducts
-            .sort((a, b) => b.sales - a.sales)
-            .map((product, index) => (
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                key={product.id}
-                className="
-                flex
-                items-center
-                justify-between
-                rounded-2xl
-                bg-white/5
-                border
-                border-white/10
-                p-4
-                transition
-              "
-              >
-                <div className="flex items-center gap-4">
-                  <div className="rounded-xl bg-purple-500/20 p-3">
-                    <FiBox className="text-purple-400 text-xl" />
-                  </div>
-
-                  <div>
-                    <h3 className="font-semibold text-white">
-                      #{index + 1} {product.name}
-                    </h3>
-
-                    <p className="text-sm text-slate-400">
-                      {product.category}
-                    </p>
-
-                    <p className="text-xs text-cyan-400 mt-1">
-                      {product.sales} Sold
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  <p className="font-bold text-emerald-400">
-                    {formatCurrency(product.price)}
-                  </p>
-
-                  <p className="text-sm text-green-400">
-                    ↗ +9%
-                  </p>
-                </div>
-              </motion.div>
-            ))
-        ) : (
+      <div className="space-y-7">
+        {products.length === 0 ? (
           <div className="py-10 text-center text-slate-400">
-            No products found
+            No sales available
           </div>
+        ) : (
+          products.map((item, index) => (
+            <motion.div
+              key={item.name}
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="font-semibold text-white">
+                    #{index + 1} {item.name}
+                  </p>
+
+                  <p className="mt-1 text-sm text-slate-400">
+                    {formatCurrency(item.revenue)}
+                  </p>
+                </div>
+
+                <p className="font-bold text-cyan-400">
+                  {item.quantity} Sold
+                </p>
+              </div>
+
+              <div className="h-3 overflow-hidden rounded-full bg-white/10">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{
+                    width: `${(item.quantity / highestQuantity) * 100}%`,
+                  }}
+                  transition={{ duration: 1 }}
+                  className="
+                    h-full
+                    rounded-full
+                    bg-gradient-to-r
+                    from-cyan-400
+                    to-blue-500
+                  "
+                />
+              </div>
+            </motion.div>
+          ))
         )}
       </div>
     </motion.div>
