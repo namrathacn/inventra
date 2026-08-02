@@ -118,6 +118,7 @@ if(joinMode){
 const q = query(
 collection(db,"businesses"),
 where("businessId","==",businessId),
+where("businessName","==",businessName),
 where("pin","==",pin)
 );
 
@@ -158,7 +159,7 @@ role:"staff",
 
 
 businessId:
-business.id,
+business.data().businessId,
 
 
 createdAt:
@@ -677,7 +678,7 @@ p-4
 
 {joinMode
 ?
-"Enter the exact Business Name and PIN shared by your Administrator."
+"Enter the exact Business ID, Business Name and PIN shared by your Administrator."
 :
 "Share this Business Name and PIN only with your staff members."}
 
