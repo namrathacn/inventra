@@ -161,54 +161,60 @@ element={
 />
 
 
+<Route
+path="/settings"
+element={
+<ProtectedRoute adminOnly={true}>
+  <Settings />
+</ProtectedRoute>
+}
+/>
+
+
 
 
 
 {/* Settings Feature Pages */}
 
 
-
 <Route
-
 path="/notifications"
-
-element={<Notifications/>}
-
+element={
+  <ProtectedRoute adminOnly={true}>
+    <Notifications />
+  </ProtectedRoute>
+}
 />
 
 
-
-
 <Route
-
 path="/ai"
-
-element={<InventraAI/>}
-
+element={
+  <ProtectedRoute adminOnly={true}>
+    <InventraAI />
+  </ProtectedRoute>
+}
 />
 
 
-
-
 <Route
-
 path="/database"
-
-element={<Database/>}
-
+element={
+  <ProtectedRoute adminOnly={true}>
+    <Database />
+  </ProtectedRoute>
+}
 />
-
-
 
 
 <Route
-
 path="/security"
-
-element={<Security/>}
-
+element={
+  <ProtectedRoute adminOnly={true}>
+    <Security />
+  </ProtectedRoute>
+}
 />
-
 
 
 

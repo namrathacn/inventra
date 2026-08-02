@@ -1,17 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 import DashboardLayout from "../../layouts/DashboardLayout";
-
 
 import {
   FiCpu,
   FiTrendingUp,
   FiBox,
   FiActivity,
-  FiCheckCircle
+  FiCheckCircle,
+  FiArrowLeft
 } from "react-icons/fi";
-
 
 
 export default function InventraAI(){
@@ -20,8 +20,9 @@ export default function InventraAI(){
 const navigate = useNavigate();
 
 
-
-const [active,setActive] = useState({});
+const [active,setActive] = useState(
+JSON.parse(localStorage.getItem("inventraAI")) || {}
+);
 
 
 
@@ -30,30 +31,36 @@ const features = [
 
 {
 title:"Stock Prediction",
-description:"Predict future inventory demand using sales trends.",
+description:
+"Predict future inventory demand using sales trends.",
 icon:<FiTrendingUp/>,
 value:"Expected demand +18%",
-recommendation:"Increase laptop and accessory stock"
+recommendation:
+"Increase laptop and accessory stock"
 },
 
 
 
 {
 title:"Smart Recommendations",
-description:"Get suggestions for purchasing and stock management.",
+description:
+"Get suggestions for purchasing and stock management.",
 icon:<FiBox/>,
 value:"15 products optimized",
-recommendation:"Restock fast moving products"
+recommendation:
+"Restock fast moving products"
 },
 
 
 
 {
 title:"AI Analytics",
-description:"Analyze inventory performance and business patterns.",
+description:
+"Analyze inventory performance and business patterns.",
 icon:<FiActivity/>,
 value:"Inventory efficiency 92%",
-recommendation:"Reduce slow moving stock"
+recommendation:
+"Reduce slow moving stock"
 }
 
 
@@ -63,16 +70,26 @@ recommendation:"Reduce slow moving stock"
 
 
 
-
 function toggleAI(title){
 
-setActive({
+
+const updated={
 
 ...active,
 
 [title]: !active[title]
 
-});
+};
+
+
+setActive(updated);
+
+
+localStorage.setItem(
+"inventraAI",
+JSON.stringify(updated)
+);
+
 
 }
 
@@ -86,7 +103,40 @@ return(
 <DashboardLayout>
 
 
-<div className="space-y-8">
+<div className="relative space-y-10">
+
+
+{/* Background Glow */}
+
+
+<div className="
+absolute
+top-0
+left-10
+w-72
+h-72
+rounded-full
+bg-purple-500/10
+blur-[120px]
+"/>
+
+
+
+<div className="
+absolute
+bottom-0
+right-10
+w-72
+h-72
+rounded-full
+bg-cyan-500/10
+blur-[120px]
+"/>
+
+
+
+
+<div className="relative space-y-8">
 
 
 
@@ -105,7 +155,9 @@ transition
 
 >
 
-← Back to Settings
+<FiArrowLeft/>
+
+Back to Settings
 
 </button>
 
@@ -114,19 +166,33 @@ transition
 
 
 
-<div>
+<motion.div
+
+initial={{
+opacity:0,
+y:-20
+}}
+
+animate={{
+opacity:1,
+y:0
+}}
+
+>
 
 
 <h1 className="
-text-3xl
-font-bold
+text-4xl
+font-black
 text-white
 flex
 items-center
 gap-3
 ">
 
-<FiCpu/>
+<FiCpu
+className="text-purple-400"
+/>
 
 Inventra AI
 
@@ -134,14 +200,18 @@ Inventra AI
 
 
 
-<p className="text-gray-400 mt-2">
+<p className="
+text-gray-400
+mt-3
+">
 
 AI powered inventory forecasting and intelligent recommendations.
 
 </p>
 
 
-</div>
+
+</motion.div>
 
 
 
@@ -149,29 +219,60 @@ AI powered inventory forecasting and intelligent recommendations.
 
 
 
-<div className="
+
+
+<motion.div
+
+initial={{
+opacity:0,
+y:30
+}}
+
+animate={{
+opacity:1,
+y:0
+}}
+
+className="
 rounded-3xl
-bg-[#111827]
+bg-[#111827]/80
+backdrop-blur-xl
 border
 border-white/10
 p-8
+shadow-xl
+"
+
+>
+
+
+<div className="
+flex
+justify-between
+items-center
+flex-wrap
+gap-5
 ">
-
-
-
-<div className="flex justify-between items-center">
 
 
 <div>
 
-<h2 className="text-2xl font-semibold text-white">
+
+<h2 className="
+text-2xl
+font-bold
+text-white
+">
 
 AI Inventory Assistant
 
 </h2>
 
 
-<p className="text-gray-400 mt-2">
+<p className="
+text-gray-400
+mt-2
+">
 
 Analyze inventory data and generate smart business insights.
 
@@ -183,14 +284,22 @@ Analyze inventory data and generate smart business insights.
 
 
 
+
 <div className="
-px-4
+px-5
 py-2
 rounded-xl
-bg-cyan-500/20
-text-cyan-300
-text-sm
+bg-purple-500/20
+border
+border-purple-400/30
+text-purple-300
+flex
+items-center
+gap-2
 ">
+
+
+<FiCpu/>
 
 AI Ready
 
@@ -198,6 +307,7 @@ AI Ready
 
 
 </div>
+
 
 
 
@@ -220,44 +330,67 @@ mt-8
 features.map((item,index)=>(
 
 
-<div
+<motion.div
 
-key={index}
+
+key={item.title}
+
+
+whileHover={{
+y:-8,
+scale:1.02
+}}
+
 
 onClick={()=>toggleAI(item.title)}
 
+
 className="
 cursor-pointer
-p-6
-rounded-2xl
+rounded-3xl
 bg-black/20
 border
 border-white/10
-hover:border-cyan-400/40
+p-6
+hover:border-purple-400/40
 transition
 "
-
 
 
 >
 
 
-
-
 <div className="
-text-cyan-400
-text-3xl
+w-14
+h-14
+rounded-2xl
+bg-gradient-to-br
+from-purple-500
+to-indigo-600
+flex
+items-center
+justify-center
+text-white
+text-2xl
 mb-5
 ">
 
+
 {item.icon}
+
 
 </div>
 
 
 
 
-<h3 className="text-white font-semibold text-lg">
+
+
+<h3 className="
+text-white
+font-bold
+text-xl
+">
 
 {item.title}
 
@@ -265,7 +398,14 @@ mb-5
 
 
 
-<p className="text-gray-400 text-sm mt-2">
+
+
+
+<p className="
+text-gray-400
+text-sm
+mt-3
+">
 
 {item.description}
 
@@ -276,15 +416,22 @@ mb-5
 
 
 
+
+
 <div className="
 mt-5
-p-4
 rounded-xl
 bg-white/5
+border
+border-white/10
+p-4
 ">
 
 
-<p className="text-cyan-300 text-sm">
+<p className="
+text-cyan-300
+font-semibold
+">
 
 {item.value}
 
@@ -292,11 +439,16 @@ bg-white/5
 
 
 
-<p className="text-gray-400 text-sm mt-2">
+<p className="
+text-gray-400
+text-sm
+mt-2
+">
 
 {item.recommendation}
 
 </p>
+
 
 
 </div>
@@ -306,17 +458,35 @@ bg-white/5
 
 
 
+
+
+
 <button
 
-className="
+className={`
 mt-5
 px-5
 py-2
 rounded-xl
-bg-cyan-500/20
-text-cyan-300
-text-sm
-"
+flex
+items-center
+gap-2
+transition
+
+${
+active[item.title]
+
+?
+
+"bg-green-500/20 text-green-300"
+
+:
+
+"bg-purple-500/20 text-purple-300"
+
+}
+
+`}
 
 >
 
@@ -328,8 +498,11 @@ active[item.title]
 ?
 
 <>
-<FiCheckCircle className="inline mr-2"/>
-Enabled
+
+<FiCheckCircle/>
+
+AI Enabled
+
 </>
 
 :
@@ -339,13 +512,14 @@ Enabled
 }
 
 
+
 </button>
 
 
 
 
 
-</div>
+</motion.div>
 
 
 ))
@@ -360,9 +534,100 @@ Enabled
 
 
 
+</motion.div>
+
+
+
+
+
+
+
+<motion.div
+
+initial={{
+opacity:0
+}}
+
+animate={{
+opacity:1
+}}
+
+className="
+rounded-3xl
+bg-white/5
+border
+border-white/10
+p-8
+"
+
+>
+
+
+<h2 className="
+text-2xl
+font-bold
+text-white
+">
+
+Future AI Features
+
+</h2>
+
+
+<div className="
+grid
+md:grid-cols-3
+gap-5
+mt-5
+">
+
+
+<div className="
+rounded-xl
+bg-black/20
+p-5
+text-gray-300
+">
+
+📈 Sales Forecasting
+
 </div>
 
 
+<div className="
+rounded-xl
+bg-black/20
+p-5
+text-gray-300
+">
+
+📦 Auto Restocking
+
+</div>
+
+
+<div className="
+rounded-xl
+bg-black/20
+p-5
+text-gray-300
+">
+
+🤖 Business Assistant
+
+</div>
+
+
+</div>
+
+
+</motion.div>
+
+
+
+
+
+</div>
 
 
 </div>

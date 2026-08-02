@@ -1,3 +1,7 @@
+import { useEffect } from "react";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "../../firebase";
+import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -21,6 +25,8 @@ const navigate = useNavigate();
 
 
 const [status,setStatus] = useState({});
+
+const {user} = useAuth();
 
 
 
@@ -52,22 +58,58 @@ icon:<FiCheckCircle/>
 
 ];
 
+useEffect(()=>{
+
+if(!user) return;
+
+loadNotifications();
+
+},[user]);
 
 
+async function loadNotifications(){
 
-function toggleNotification(title){
+const snap = await getDoc(
+  doc(db,"notificationSettings",user.uid)
+);
 
 
-setStatus({
+if(snap.exists()){
+
+setStatus(
+  snap.data()
+);
+
+}
+
+}
+
+
+async function toggleNotification(title){
+
+const updated = {
 
 ...status,
 
 [title]: !status[title]
 
-});
+};
+
+
+setStatus(updated);
+
+
+await setDoc(
+  doc(db,"notificationSettings",user.uid),
+  updated
+);
 
 
 }
+
+
+
+
 
 
 

@@ -56,9 +56,29 @@ const lowStock = products.filter(
   (product) => Number(product.stock) <= 5
 ).length;
 
-const totalProfit = totalRevenue * 0.30;
+const inventoryValue = products.reduce(
+  (sum, product) =>
+    sum +
+    Number(product.price || 0) *
+      Number(product.stock || 0),
+  0
+);
 
-const totalLoss = totalRevenue * 0.05;
+
+const estimatedExpense = totalRevenue * 0.70;
+
+const totalProfit = Math.max(
+  totalRevenue - estimatedExpense,
+  0
+);
+
+const totalLoss =
+  totalRevenue === 0
+    ? inventoryValue
+    : Math.max(
+        estimatedExpense - totalRevenue,
+        0
+      );
 const orderStatus = {
 
   completed: orders.filter(
@@ -572,8 +592,13 @@ md:grid-cols-4
 
 
           <p className="text-cyan-400 font-semibold">
-            ₹{product.price}
-          </p>
+  {currencySymbol}
+  {Math.round(
+    convertAmount(
+      product.price || 0
+    )
+  ).toLocaleString()}
+</p>
 
 
         </div>
@@ -947,7 +972,11 @@ text-green-400
 mt-2
 ">
 
-Estimated 30% business profit
+{
+totalProfit === 0
+? "No profit yet"
+: "Revenue exceeds inventory cost"
+}
 
 </p>
 
@@ -1027,7 +1056,11 @@ text-red-400
 mt-2
 ">
 
-Estimated 5% operational loss
+{
+totalLoss === 0
+? "No loss detected"
+: "Inventory value exceeds revenue"
+}
 
 </p>
 
@@ -1117,7 +1150,7 @@ font-semibold
 mt-4
 ">
 
-Available Stock
+Products In Stock
 
 </h3>
 
@@ -1130,7 +1163,11 @@ text-white
 mt-2
 ">
 
-{totalStock}
+{
+products.filter(
+p => Number(p.stock) > 0
+).length
+}
 
 </p>
 
@@ -1216,7 +1253,7 @@ font-semibold
 mt-4
 ">
 
-Growth Rate
+Business Health
 
 </h3>
 
@@ -1229,11 +1266,16 @@ text-white
 mt-2
 ">
 
-{totalOrders === 0
-  ? "0%"
-  : `${Math.round(
-      (totalRevenue / totalOrders) / 100
-    )}%`}
+{
+products.length === 0
+? "0%"
+: `${Math.min(
+Math.round(
+(totalOrders / products.length) * 100
+),
+100
+)}%`
+}
 
 </p>
 

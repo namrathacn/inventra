@@ -75,13 +75,11 @@ async function loadStats() {
     );
 
     const staffSnap = await getDocs(
-      collection(
-        db,
-        "businesses",
-        user.businessId,
-        "staff"
-      )
-    );
+  collection(
+    db,
+    "staff"
+  )
+);
 
     const products = productsSnap.docs.filter(
       (doc) => doc.data().businessId === user.businessId

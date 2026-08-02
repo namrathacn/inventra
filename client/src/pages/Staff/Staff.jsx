@@ -1,4 +1,5 @@
-﻿import DashboardLayout from "../../layouts/DashboardLayout";
+﻿import { db } from "../../firebase";
+import DashboardLayout from "../../layouts/DashboardLayout";
 
 import {
 FiUsers,
@@ -81,33 +82,26 @@ setShowModal(true);
 
 
 useEffect(() => {
-
-  if (!user?.businessId) return;
+  if (!user) return;
 
   loadStaff();
-
 }, [user]);
 
 
 
 async function loadStaff() {
+  try {
+    const snap = await getDocs(collection(db, "staff"));
 
-  const snap = await getDocs(
-    collection(
-      db,
-      "businesses",
-      user.businessId,
-      "staff"
-    )
-  );
-
-  setStaff(
-    snap.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }))
-  );
-
+    setStaff(
+      snap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+    );
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 
@@ -155,38 +149,21 @@ try{
 
 if (editStaff) {
 
-  await updateDoc(
-    doc(
-      db,
-      "businesses",
-      user.businessId,
-      "staff",
-      editStaff.id
-    ),
-    form
-  );
+await updateDoc(
+  doc(db, "staff", editStaff.id),
+  form
+);
 
 }
 else{
 
 
 const ref = await addDoc(
-
-collection(
-db,
-"businesses",
-user.businessId,
-"staff"
-),
-
-{
-
-...form,
-
-createdAt:new Date()
-
-}
-
+  collection(db, "staff"),
+  {
+    ...form,
+    createdAt: new Date(),
+  }
 );
 
 
@@ -237,15 +214,7 @@ try{
 
 
 await deleteDoc(
-
-doc(
-db,
-"businesses",
-user.businessId,
-"staff",
-id
-)
-
+  doc(db, "staff", id)
 );
 
 

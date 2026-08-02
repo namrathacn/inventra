@@ -6,7 +6,6 @@ import {
   FiAlertTriangle,
   FiClock,
   FiCheckCircle,
-  FiTrendingUp
 } from "react-icons/fi";
 
 import { motion } from "framer-motion";
@@ -35,8 +34,7 @@ const {
 } = useSearch();
 const {
   orders,
-  products,
-  stats
+  products
 } = useData();
 
 
@@ -71,41 +69,6 @@ const totalRevenue = orders.reduce(
 );
 
 
-const totalCost = products.reduce(
-(sum,p)=>
-sum + (Number(p.price || 0) * Number(p.stock || 0)),
-0
-);
-
-
-const profit =
-Math.max(
-totalRevenue - totalCost,
-0
-);
-
-const loss =
-Math.max(
-totalCost - totalRevenue,
-0
-);
-
-
-const deadStock =
-products.filter(
-p=>Number(p.stock)>0
-).length;
-
-
-const demandForecast =
-orders.length===0
-?0
-:Math.min(
-Math.round(
-orders.length*8
-),
-100
-);
 
 
 
@@ -132,78 +95,46 @@ lg:grid-cols-4
 >
 
 
+<StatCard
+  title="Revenue"
+  value={formatCurrency(totalRevenue)}
+  isCurrency={false}
+  icon={<FiDollarSign />}
+  glowColor="bg-emerald-500"
+  iconBackground="bg-emerald-500/20"
+  iconColor="text-emerald-400"
+/>
 
 <StatCard
+  title="Orders"
+  value={orders.length}
+  icon={<FiShoppingCart />}
+  glowColor="bg-blue-500"
+  iconBackground="bg-blue-500/20"
+  iconColor="text-blue-400"
+/>
 
-title="Revenue"
+<StatCard
+  title="Products"
+  value={products.length}
+  icon={<FiBox />}
+  glowColor="bg-purple-500"
+  iconBackground="bg-purple-500/20"
+  iconColor="text-purple-400"
+/>
 
-value={stats.revenue}
-
-isCurrency={true}
-
-icon={<FiDollarSign/>}
-
-glowColor="bg-emerald-500"
-
-iconBackground="bg-emerald-500/20"
-
-iconColor="text-emerald-400"
-
+<StatCard
+  title="Low Stock"
+  value={lowStock}
+  icon={<FiAlertTriangle />}
+  glowColor="bg-yellow-500"
+  iconBackground="bg-yellow-500/20"
+  iconColor="text-yellow-400"
 />
 
 
 
-<StatCard
 
-title="Orders"
-
-value={stats.totalOrders}
-
-icon={<FiShoppingCart/>}
-
-glowColor="bg-blue-500"
-
-iconBackground="bg-blue-500/20"
-
-iconColor="text-blue-400"
-
-/>
-
-
-
-<StatCard
-
-title="Products"
-
-value={stats.totalProducts}
-
-icon={<FiBox/>}
-
-glowColor="bg-purple-500"
-
-iconBackground="bg-purple-500/20"
-
-iconColor="text-purple-400"
-
-/>
-
-
-
-<StatCard
-
-title="Low Stock"
-
-value={stats.lowStock}
-
-icon={<FiAlertTriangle/>}
-
-glowColor="bg-red-500"
-
-iconBackground="bg-red-500/20"
-
-iconColor="text-red-400"
-
-/>
 
 
 </div>
@@ -223,23 +154,14 @@ iconColor="text-red-400"
 className="
 grid
 gap-6
-lg:grid-cols-2
+lg:grid-cols-1
 "
 >
 
-
-
 <motion.div
 
-initial={{
-opacity:0,
-y:20
-}}
-
-animate={{
-opacity:1,
-y:0
-}}
+initial={{ opacity:0, y:20 }}
+animate={{ opacity:1, y:0 }}
 
 className="
 rounded-3xl
@@ -252,312 +174,61 @@ backdrop-blur-xl
 
 >
 
-
-<h2 className="
-text-xl
-font-bold
-text-white
-">
-
-Sales Overview
-
-</h2>
-
-
-
-<p className="
-text-sm
-text-slate-400
-mt-1
-">
-
-Monthly performance
-
-</p>
-
-
-
-
-<div className="
-mt-6
-space-y-5
-">
-
-
-{
-
-[
-["January",75],
-["February",60],
-["March",85],
-["April",70]
-
-].map((item)=>(
-
-
-<div key={item[0]}>
-
-
-<div className="
-flex
-justify-between
-text-sm
-text-slate-300
-">
-
-
-<span>
-{item[0]}
-</span>
-
-
-<span>
-{item[1]}%
-</span>
-
-
-</div>
-
-
-
-<div className="
-h-3
-rounded-full
-bg-white/10
-mt-2
-">
-
-
-
-<div
-
-className="
-h-full
-rounded-full
-bg-gradient-to-r
-from-blue-500
-to-cyan-400
-"
-
-style={{
-width:`${item[1]}%`
-}}
-
-/>
-
-
-
-</div>
-
-
-
-</div>
-
-
-))
-
-
-}
-
-
-
-</div>
-
-
-
-</motion.div>
-
-
-
-
-
-<motion.div
-
-className="
-rounded-3xl
-border
-border-white/10
-bg-white/5
-p-6
-backdrop-blur-xl
-"
-
->
-
-
-<h2 className="
-text-xl
-font-bold
-text-white
-">
-
+<h2 className="text-xl font-bold text-white">
 Inventory Status
-
 </h2>
 
-
-<p className="
-text-sm
-text-slate-400
-mt-1
-">
-
+<p className="text-sm text-slate-400 mt-1">
 Current stock overview
-
 </p>
 
+<div className="grid grid-cols-3 gap-4 mt-8">
 
+<div className="rounded-2xl bg-green-500/10 p-5 text-center">
 
+<FiBox className="mx-auto text-3xl text-green-400"/>
 
-<div className="
-grid
-grid-cols-3
-gap-4
-mt-8
-">
-
-
-
-<div className="
-rounded-2xl
-bg-green-500/10
-p-5
-text-center
-">
-
-
-<FiBox
-
-className="
-mx-auto
-text-3xl
-text-green-400
-"
-
-/>
-
-
-<h3 className="
-text-xl
-font-bold
-text-white
-mt-3
-">
-
+<h3 className="text-xl font-bold text-white mt-3">
 {availableStock}
-
 </h3>
 
-
-<p className="
-text-sm
-text-slate-400
-">
-
+<p className="text-sm text-slate-400">
 Available
-
 </p>
 
-
 </div>
-<div className="
-rounded-2xl
-bg-yellow-500/10
-p-5
-text-center
-">
 
+<div className="rounded-2xl bg-yellow-500/10 p-5 text-center">
 
-<FiAlertTriangle
+<FiAlertTriangle className="mx-auto text-3xl text-yellow-400"/>
 
-className="
-mx-auto
-text-3xl
-text-yellow-400
-"
-
-/>
-
-
-<h3 className="
-text-xl
-font-bold
-text-white
-mt-3
-">
-
+<h3 className="text-xl font-bold text-white mt-3">
 {lowStock}
-
 </h3>
 
-
-<p className="
-text-sm
-text-slate-400
-">
-
-Low
-
+<p className="text-sm text-slate-400">
+Low Stock
 </p>
-
 
 </div>
 
+<div className="rounded-2xl bg-red-500/10 p-5 text-center">
 
+<FiBox className="mx-auto text-3xl text-red-400"/>
 
-
-
-<div className="
-rounded-2xl
-bg-red-500/10
-p-5
-text-center
-">
-
-
-<FiBox
-
-className="
-mx-auto
-text-3xl
-text-red-400
-"
-
-/>
-
-
-<h3 className="
-text-xl
-font-bold
-text-white
-mt-3
-">
-
+<h3 className="text-xl font-bold text-white mt-3">
 {outOfStock}
-
 </h3>
 
-
-<p className="
-text-sm
-text-slate-400
-">
-
-Out
-
+<p className="text-sm text-slate-400">
+Out Of Stock
 </p>
 
-
 </div>
 
-
-
 </div>
-
-
 
 </motion.div>
-
 
 </div>
 
@@ -826,362 +497,7 @@ No orders found
 
 
 </motion.div>
-{/* AI INVENTORY INSIGHTS */}
 
-
-<motion.div
-
-
-initial={{
-opacity:0,
-y:20
-}}
-
-
-animate={{
-opacity:1,
-y:0
-}}
-
-
-className="
-rounded-3xl
-border
-border-purple-400/20
-bg-gradient-to-br
-from-purple-500/10
-to-blue-500/10
-p-6
-backdrop-blur-xl
-"
-
-
->
-
-
-
-<div className="
-flex
-items-center
-justify-between
-">
-
-
-<div>
-
-
-<h2 className="
-text-xl
-font-bold
-text-white
-">
-
-AI Inventory Insights
-
-</h2>
-
-
-
-<p className="
-text-sm
-text-slate-400
-mt-1
-">
-
-Smart business analysis and predictions
-
-</p>
-
-
-</div>
-
-
-
-
-<div className="
-rounded-2xl
-bg-purple-500/20
-p-3
-">
-
-
-<FiTrendingUp
-
-className="
-text-purple-400
-text-2xl
-"
-
-/>
-
-
-</div>
-
-
-</div>
-
-
-
-
-
-
-
-<div className="
-grid
-gap-5
-mt-6
-md:grid-cols-4
-">
-
-
-
-
-
-
-<div className="
-rounded-2xl
-border
-border-green-400/20
-bg-green-500/10
-p-5
-">
-
-
-<h3 className="
-font-semibold
-text-green-400
-">
-
-Profit Analysis
-
-</h3>
-
-
-
-
-<h4 className="
-text-3xl
-font-bold
-text-white
-mt-3
-">
-
-{formatCurrency(profit)}
-
-</h4>
-
-
-
-
-<p className="
-text-sm
-text-slate-300
-mt-2
-">
-
-{
-orders.length===0
-?
-"No sales yet"
-:
-`${orders.length} Orders`
-}
-
-</p>
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-<div className="
-rounded-2xl
-border
-border-red-400/20
-bg-red-500/10
-p-5
-">
-
-
-<h3 className="
-font-semibold
-text-red-400
-">
-
-Loss Detection
-
-</h3>
-
-
-
-
-
-<h4 className="
-text-3xl
-font-bold
-text-white
-mt-3
-">
-
-{formatCurrency(loss)}
-
-</h4>
-
-
-
-
-<p className="
-text-sm
-text-slate-300
-mt-2
-">
-
-No active losses detected
-
-</p>
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-<div className="
-rounded-2xl
-border
-border-yellow-400/20
-bg-yellow-500/10
-p-5
-">
-
-
-<h3 className="
-font-semibold
-text-yellow-400
-">
-
-Dead Stock Alert
-
-</h3>
-
-
-
-
-<h4 className="
-text-3xl
-font-bold
-text-white
-mt-3
-">
-
-{deadStock}
-
-</h4>
-
-
-
-
-<p className="
-text-sm
-text-slate-300
-mt-2
-">
-
-Products currently in stock
-
-</p>
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-<div className="
-rounded-2xl
-border
-border-cyan-400/20
-bg-cyan-500/10
-p-5
-">
-
-
-<h3 className="
-font-semibold
-text-cyan-400
-">
-
-Demand Forecast
-
-</h3>
-
-
-
-
-
-<h4 className="
-text-3xl
-font-bold
-text-white
-mt-3
-">
-
-{demandForecast}%
-
-</h4>
-
-
-
-
-<p className="
-text-sm
-text-slate-300
-mt-2
-">
-
-{
-orders.length===0
-?
-"No prediction yet"
-:
-"Based on current orders"
-}
-
-</p>
-
-
-
-</div>
-
-
-
-
-
-</div>
-
-
-
-
-</motion.div>
 
 
 

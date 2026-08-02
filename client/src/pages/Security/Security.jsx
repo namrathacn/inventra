@@ -27,7 +27,30 @@ const [twoFactor,setTwoFactor] = useState(false);
 
 const [passwordChanged,setPasswordChanged] = useState(false);
 const [newPassword, setNewPassword] = useState("");
+async function changePassword() {
 
+  if (newPassword.length < 6) {
+    alert("Password must be at least 6 characters");
+    return;
+  }
+
+  try {
+
+    await updatePassword(
+      auth.currentUser,
+      newPassword
+    );
+
+    setPasswordChanged(true);
+    setNewPassword("");
+
+  } catch(err){
+
+    alert(err.message);
+
+  }
+
+}
 
 const securityOptions=[
 
@@ -168,6 +191,30 @@ Account Protection
 Manage authentication and account security settings.
 
 </p>
+<input
+
+type="password"
+
+placeholder="Enter new password"
+
+value={newPassword}
+
+onChange={(e)=>setNewPassword(e.target.value)}
+
+className="
+mt-5
+w-full
+max-w-md
+bg-white/10
+border
+border-white/10
+rounded-xl
+p-3
+text-white
+outline-none
+"
+
+/>
 
 
 </div>
@@ -272,24 +319,8 @@ mb-5
 
 <button
 
-onClick={()=>{
+onClick={changePassword}
 
-async function changePassword() {
-  if (newPassword.length < 6) {
-    alert("Password must be at least 6 characters");
-    return;
-  }
-
-  try {
-    await updatePassword(auth.currentUser, newPassword);
-    alert("Password updated successfully");
-    setNewPassword("");
-  } catch (err) {
-    alert(err.message);
-  }
-}
-
-}}
 
 className="
 mt-5

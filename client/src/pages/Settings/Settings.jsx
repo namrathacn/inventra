@@ -24,7 +24,6 @@ const navigate = useNavigate();
 
 const settings=[
 
-
 {
 title:"Business Profile",
 description:"Manage company details, business information and workspace preferences.",
@@ -68,8 +67,6 @@ icon:<FiShield/>,
 path:"/security",
 gradient:"from-red-500 to-pink-600"
 }
-
-
 
 ];
 
@@ -252,7 +249,11 @@ scale:1.02
 
 
 
-onClick={()=>navigate(item.path)}
+onClick={() => {
+  if (item.path !== "#") {
+    navigate(item.path);
+  }
+}}
 
 
 
