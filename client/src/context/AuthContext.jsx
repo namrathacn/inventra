@@ -186,89 +186,7 @@ return currentUser;
 // CREATE BUSINESS
 
 
-const createBusiness = async(data)=>{
 
-
-const {
-
-businessName,
-
-pin
-
-}=data;
-
-
-
-const businessRef =
-await addDoc(
-collection(db,"businesses"),
-{
-
-
-businessName,
-
-
-pin,
-
-
-ownerId:
-auth.currentUser.uid,
-
-
-createdAt:
-serverTimestamp()
-
-
-}
-);
-
-
-
-
-
-await setDoc(
-
-doc(
-db,
-"users",
-auth.currentUser.uid
-),
-
-{
-
-
-uid:
-auth.currentUser.uid,
-
-
-name:
-auth.currentUser.displayName,
-
-
-email:
-auth.currentUser.email,
-
-
-role:
-"admin",
-
-
-businessId:
-businessRef.id
-
-
-}
-
-
-);
-
-
-
-
-
-
-
-};
 
 
 
@@ -281,102 +199,7 @@ businessRef.id
 // JOIN BUSINESS STAFF
 
 
-const joinBusiness = async(data)=>{
 
-
-const {
-
-pin
-
-}=data;
-
-
-
-
-
-const q =
-query(
-
-collection(db,"businesses"),
-
-where(
-"pin",
-"==",
-pin
-)
-
-);
-
-
-
-const result =
-await getDocs(q);
-
-
-
-if(result.empty){
-
-throw new Error(
-"Invalid Business PIN"
-);
-
-}
-
-
-
-
-const business =
-result.docs[0];
-
-
-
-
-
-
-await setDoc(
-
-doc(
-db,
-"users",
-auth.currentUser.uid
-),
-
-{
-
-
-uid:
-auth.currentUser.uid,
-
-
-name:
-auth.currentUser.displayName,
-
-
-email:
-auth.currentUser.email,
-
-
-role:
-"staff",
-
-
-businessId:
-business.id
-
-
-}
-
-
-);
-
-
-
-
-
-
-
-
-};
 
 
 
@@ -406,20 +229,10 @@ return(
 <AuthContext.Provider
 
 value={{
-
-user,
-
-loading,
-
-googleLogin,
-
-createBusiness,
-
-joinBusiness,
-
-logout
-
-
+  user,
+  loading,
+  googleLogin,
+  logout
 }}
 
 >

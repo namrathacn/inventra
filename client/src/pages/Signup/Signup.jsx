@@ -117,7 +117,6 @@ if(joinMode){
 
 const q = query(
 collection(db,"businesses"),
-where("businessId","==",businessId),
 where("businessName","==",businessName),
 where("pin","==",pin)
 );
@@ -627,16 +626,7 @@ placeholder="Email Address"
 value={email}
 setValue={setEmail}
 />
-{joinMode && (
 
-<AuthInput
-icon={<FiBriefcase/>}
-placeholder="Business ID (Example: INV-A1B2C3)"
-value={businessId}
-setValue={setBusinessId}
-/>
-
-)}
 <AuthInput
 icon={<FiLock/>}
 placeholder="Password"
@@ -678,7 +668,7 @@ p-4
 
 {joinMode
 ?
-"Enter the exact Business ID, Business Name and PIN shared by your Administrator."
+"Enter the exact Business Name and PIN shared by your Administrator."
 :
 "Share this Business Name and PIN only with your staff members."}
 
