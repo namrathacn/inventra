@@ -16,7 +16,9 @@ import {
   addDoc,
   deleteDoc,
   updateDoc,
-  doc
+  doc,
+  query,
+  where
 } from "firebase/firestore";
 
 
@@ -40,7 +42,7 @@ export default function Staff(){
 const {search}=useSearch();
 
 const {user}=useAuth();
-console.log("STAFF USER",user);
+console.log("STAFF USER", JSON.stringify(user, null, 2));
 
 
 const [staff,setStaff]=useState([]);
@@ -89,9 +91,15 @@ useEffect(() => {
 
 
 
+
 async function loadStaff() {
   try {
-    const snap = await getDocs(collection(db, "staff"));
+    const q = query(
+      collection(db, "staff"),
+      where("businessId", "==", user.businessId)
+    );
+
+    const snap = await getDocs(q);
 
     setStaff(
       snap.docs.map(doc => ({
@@ -103,7 +111,6 @@ async function loadStaff() {
     console.log(err);
   }
 }
-
 
 
 
@@ -162,6 +169,7 @@ const ref = await addDoc(
   collection(db, "staff"),
   {
     ...form,
+    businessId: user.businessId,
     createdAt: new Date(),
   }
 );

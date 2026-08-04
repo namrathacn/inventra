@@ -197,24 +197,26 @@ Math.random()
 .substring(2,8)
 .toUpperCase();
 
-const businessRef =
-await addDoc(
-collection(db,"businesses"),
-{
+const existing = await getDocs(
+  query(
+    collection(db, "businesses"),
+    where("ownerId", "==", user.uid)
+  )
+);
 
-businessId:
-generatedBusinessId,
-
-businessName,
-
-pin,
-
-ownerId:user.uid,
-
-createdAt:
-serverTimestamp()
-
+if (!existing.empty) {
+  throw new Error("You already own a business.");
 }
+
+await addDoc(
+  collection(db, "businesses"),
+  {
+    businessId: generatedBusinessId,
+    businessName,
+    pin,
+    ownerId: user.uid,
+    createdAt: serverTimestamp(),
+  }
 );
 
 
@@ -393,65 +395,50 @@ toast.success("Joined Business");
 }
 
 
-// ================= CREATE BUSINESS =================
+else {
 
-else{
+const existingBusiness = await getDocs(
+  query(
+    collection(db, "businesses"),
+    where("ownerId", "==", user.uid)
+  )
+);
 
-const generatedBusinessId =
-"INV-" +
-Math.random()
-.toString(36)
-.substring(2,8)
-.toUpperCase();
-
-await addDoc(
-
-collection(db,"businesses"),
-
-{
-
-businessId:generatedBusinessId,
-
-businessName,
-
-pin,
-
-ownerId:user.uid,
-
-createdAt:serverTimestamp()
-
+if (!existingBusiness.empty) {
+  toast.error("You already own a business");
+  return;
 }
 
+const generatedBusinessId =
+  "INV-" +
+  Math.random().toString(36).substring(2, 8).toUpperCase();
+
+await addDoc(
+  collection(db, "businesses"),
+  {
+    businessId: generatedBusinessId,
+    businessName,
+    pin,
+    ownerId: user.uid,
+    createdAt: serverTimestamp(),
+  }
 );
 
 await setDoc(
-
-doc(db,"users",user.uid),
-
-{
-
-uid:user.uid,
-
-name:user.displayName,
-
-email:user.email,
-
-role:"admin",
-
-businessId:generatedBusinessId,
-
-createdAt:serverTimestamp()
-
-}
-
+  doc(db, "users", user.uid),
+  {
+    uid: user.uid,
+    name: user.displayName,
+    email: user.email,
+    role: "admin",
+    businessId: generatedBusinessId,
+    createdAt: serverTimestamp(),
+  }
 );
 
-toast.success(
-`Business Created
+toast.success(`Business Created
 
-Business ID : ${generatedBusinessId}`
-);
-
+Business ID: ${generatedBusinessId}`);
 }
 
 navigate("/dashboard");
